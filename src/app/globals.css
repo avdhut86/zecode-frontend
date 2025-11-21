@@ -1,0 +1,155 @@
+/* src/app/globals.css
+   Correct ordering:
+   1) @import (Google fonts)
+   2) @font-face declarations (local fonts)
+   3) @tailwind directives
+   4) custom CSS / variables / utilities
+*/
+
+/* 1) Google Fonts import MUST be first (before other rules) */
+@import url("https://fonts.googleapis.com/css2?family=League+Gothic&family=Inter:wght@300;400;600;700;800&display=swap");
+
+/* 2) Local font face (DIN Condensed) - put file at /public/fonts/DINCondensed.woff2 */
+@font-face {
+  font-family: "DIN Condensed";
+  src: url("/fonts/DINCondensed.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* 3) Tailwind directives (must come after @import/@font-face) */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ---------------------------
+   BRAND COLOR VARIABLES
+--------------------------- */
+:root{
+  --brand-black: #000000;
+  --brand-red: #C83232;   /* Updated to match logo red */
+  --brand-ivory: #F5F1ED;
+  --brand-grey: #D8DAD7;
+
+  --background: #ffffff;
+  --foreground: #171717;
+
+  --max-width: 1400px; /* Increased for wider layout */
+}
+
+/* Dark mode */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+/* ------------------------------------------------
+   Base page styles
+------------------------------------------------ */
+html, body, #__next {
+  height: 100%;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  line-height: 1.5;
+}
+
+/* ------------------------------------------------
+   Headings — use DIN Condensed (local) then League Gothic
+------------------------------------------------ */
+h1,h2,h3,h4,h5,h6 {
+  font-family: "DIN Condensed", "League Gothic", Oswald, system-ui, sans-serif;
+  letter-spacing: 0.02em;
+  margin: 0;
+  color: var(--brand-black);
+  line-height: 1.05;
+}
+
+/* Responsive heading sizes */
+h1 { font-size: clamp(2.5rem, 5vw, 4rem); }
+h2 { font-size: clamp(2rem, 4vw, 3rem); }
+h3 { font-size: clamp(1.5rem, 3vw, 2.25rem); }
+
+/* ------------------------------------------------
+   Brand utilities / components
+------------------------------------------------ */
+.btn-brand {
+  background: var(--brand-black);
+  color: var(--brand-ivory);
+  padding: 0.6rem 1.1rem;
+  border-radius: 0.4rem;
+  font-weight: 700;
+  display: inline-block;
+  text-decoration: none;
+}
+
+.btn-outline {
+  border: 2px solid var(--brand-black);
+  color: var(--brand-black);
+  background: transparent;
+  padding: 0.5rem 1rem;
+  border-radius: 0.4rem;
+}
+
+.badge-accent {
+  display: inline-block;
+  background: var(--brand-red);
+  color: #fff;
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+
+/* ------------------------------------------------
+   Layout helpers
+------------------------------------------------ */
+.container {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+.hero {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  padding: 2rem 0;
+}
+
+/* ------------------------------------------------
+   Content (Directus HTML output)
+------------------------------------------------ */
+.prose {
+  color: var(--foreground);
+}
+
+/* Make images responsive in content */
+.prose img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* ------------------------------------------------
+   Accessibility
+------------------------------------------------ */
+:focus {
+  outline: 3px solid rgba(193, 52, 50, 0.4);
+  outline-offset: 2px;
+}
+
+/* Small helpers */
+.text-brand-red { color: var(--brand-red); }
+.bg-brand-ivory { background: var(--brand-ivory); }
