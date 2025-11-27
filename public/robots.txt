@@ -1,0 +1,21 @@
+# https://www.robotstxt.org/robotstxt.html
+User-agent: *
+Allow: /
+
+# Block sensitive paths
+Disallow: /api/
+Disallow: /admin/
+Disallow: /_next/
+Disallow: /private/
+
+# Allow search engines to index images
+User-agent: Googlebot-Image
+Allow: /images/
+Allow: /products/
+Allow: /categories/
+
+# Sitemap
+Sitemap: https://zecode-frontend.vercel.app/sitemap.xml
+
+# Crawl delay for polite crawling
+Crawl-delay: 1

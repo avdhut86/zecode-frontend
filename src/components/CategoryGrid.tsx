@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { MOCK_DATA } from "@/lib/mock-data";
 import type { Category } from "@/lib/directus";
 
@@ -61,20 +62,20 @@ export default function CategoryGrid({ categories }: CategoryGridProps) {
                                 transition: 'transform 0.3s ease, box-shadow 0.3s ease'
                             }}
                         >
-                            {/* Background Image using img tag */}
-                            <img
+                            {/* Background Image using Next.js Image */}
+                            <Image
                                 src={cat.image}
                                 alt={cat.title}
+                                fill
+                                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                                 style={{
-                                    position: 'absolute',
-                                    top: 0,
-                                    left: 0,
-                                    width: '100%',
-                                    height: '100%',
                                     objectFit: 'cover',
                                     transition: 'transform 0.7s ease'
                                 }}
                                 className="group-hover:scale-105"
+                                loading="lazy"
+                                placeholder="blur"
+                                blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFgABAQEAAAAAAAAAAAAAAAAAAAUH/8QAIhAAAgEDAwUBAAAAAAAAAAAAAQIDAAQRBRIhBhMxQVFh/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAYEQEAAwEAAAAAAAAAAAAAAAABAAIRIf/aAAwDAQACEQMRAD8AoXXVN1qWnWdlc2kCw2y7UJGS5yck/STUulKoSbLZn//Z"
                             />
 
                             {/* Overlay */}

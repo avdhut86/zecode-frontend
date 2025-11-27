@@ -7,13 +7,64 @@ import { ThemeProvider } from "@/contexts/ThemeContext";
 import type { Metadata, Viewport } from "next";
 
 export const metadata: Metadata = {
-  title: "Zecode - Urban Fashion Code",
-  description: "Zecode store - Find your fashion code",
+  title: {
+    default: "ZECODE - Your New Fashion Code",
+    template: "%s | ZECODE",
+  },
+  description: "ZECODE - Premium kids fashion store in Bengaluru. Discover trendy, comfortable, and affordable clothing for children of all ages.",
+  keywords: ["kids fashion", "children clothing", "Bengaluru", "kids wear", "ZECODE", "affordable kids clothes"],
+  authors: [{ name: "ZECODE" }],
+  creator: "ZECODE",
+  publisher: "ZECODE",
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+  openGraph: {
+    type: "website",
+    locale: "en_IN",
+    url: "https://zecode-frontend.vercel.app",
+    siteName: "ZECODE",
+    title: "ZECODE - Your New Fashion Code",
+    description: "Premium kids fashion store in Bengaluru. Trendy, comfortable, and affordable clothing for children.",
+    images: [
+      {
+        url: "/brand/zecode-og.png",
+        width: 1200,
+        height: 630,
+        alt: "ZECODE - Kids Fashion",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "ZECODE - Your New Fashion Code",
+    description: "Premium kids fashion store in Bengaluru.",
+    images: ["/brand/zecode-og.png"],
+  },
+  verification: {
+    google: "googleadc32a1f183a082d",
+  },
+  alternates: {
+    canonical: "https://zecode-frontend.vercel.app",
+  },
 };
 
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
+  maximumScale: 5,
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#000000" },
+  ],
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {

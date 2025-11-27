@@ -10,8 +10,23 @@ const globalForPrisma = globalThis as unknown as {
   pool: pg.Pool | undefined;
 };
 
+// Optimized connection pool settings for serverless
+const poolConfig: pg.PoolConfig = {
+  connectionString,
+  max: 10, // Maximum connections in pool
+  min: 2, // Minimum connections to keep
+  idleTimeoutMillis: 30000, // Close idle connections after 30 seconds
+  connectionTimeoutMillis: 10000, // Timeout after 10 seconds if can't connect
+  allowExitOnIdle: true, // Allow process to exit when idle
+};
+
 // Create connection pool
-const pool = globalForPrisma.pool ?? new pg.Pool({ connectionString });
+const pool = globalForPrisma.pool ?? new pg.Pool(poolConfig);
+
+// Handle pool errors
+pool.on('error', (err) => {
+  console.error('Unexpected PostgreSQL pool error:', err);
+});
 
 // Create adapter
 const adapter = new PrismaPg(pool);
@@ -27,6 +42,12 @@ export const prisma =
 if (process.env.NODE_ENV !== 'production') {
   globalForPrisma.prisma = prisma;
   globalForPrisma.pool = pool;
+}
+
+// Graceful shutdown helper
+export async function disconnectPrisma() {
+  await prisma.$disconnect();
+  await pool.end();
 }
 
 export default prisma;
