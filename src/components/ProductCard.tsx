@@ -6,17 +6,21 @@ interface ProductProps {
     name: string;
     price: number;
     image: string;
+    slug: string;
 }
 
 export default function ProductCard({ product }: { product: ProductProps }) {
     return (
-        <Link href={`/product/${product.id}`} className="group block">
+        <Link href={`/product/${product.slug}`} className="group block">
             <div className="relative aspect-[3/4] w-full overflow-hidden bg-gray-100">
-                {/* Placeholder for image */}
-                <div className="absolute inset-0 flex items-center justify-center bg-gray-200 text-gray-400">
-                    <span className="text-xs uppercase tracking-widest">No Image</span>
-                </div>
-
+                {/* Product image */}
+                <Image
+                    src={product.image}
+                    alt={product.name}
+                    fill
+                    style={{ objectFit: "cover", objectPosition: "center" }}
+                    className="transition-opacity duration-300 group-hover:opacity-90"
+                />
                 {/* Hover overlay */}
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300"></div>
             </div>

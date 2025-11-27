@@ -11,6 +11,11 @@ const nextConfig: NextConfig = {
         port: "8055",
         pathname: "/assets/**",
       },
+      {
+        protocol: "https",
+        hostname: "maps.googleapis.com",
+        pathname: "/maps/api/place/photo/**",
+      },
     ],
   },
 };

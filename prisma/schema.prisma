@@ -1,0 +1,198 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ==========================================
+// CATEGORIES
+// ==========================================
+
+model Category {
+  id            Int           @id @default(autoincrement())
+  title         String
+  slug          String        @unique
+  image         String?
+  link          String
+  sort          Int           @default(0)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  subcategories Subcategory[]
+  products      Product[]
+
+  @@map("categories")
+}
+
+model Subcategory {
+  id          Int       @id @default(autoincrement())
+  title       String
+  slug        String    @unique
+  image       String?
+  link        String
+  sort        Int       @default(0)
+  categoryId  Int
+  category    Category  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  products    Product[]
+
+  @@map("subcategories")
+}
+
+// ==========================================
+// PRODUCTS (Catalogue)
+// ==========================================
+
+model Product {
+  id             Int          @id @default(autoincrement())
+  name           String
+  slug           String       @unique
+  description    String?
+  price          Decimal      @db.Decimal(10, 2)
+  originalPrice  Decimal?     @db.Decimal(10, 2)
+  image          String?
+  inStock        Boolean      @default(true)
+  rating         Float?
+  reviewCount    Int          @default(0)
+  categoryId     Int?
+  category       Category?    @relation(fields: [categoryId], references: [id])
+  subcategoryId  Int?
+  subcategory    Subcategory? @relation(fields: [subcategoryId], references: [id])
+  isFeatured     Boolean      @default(false)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  storeProducts  StoreProduct[]
+
+  @@map("products")
+}
+
+// ==========================================
+// STORES (Directory)
+// ==========================================
+
+model Store {
+  id            Int       @id @default(autoincrement())
+  name          String
+  slug          String    @unique
+  address       String
+  city          String
+  state         String
+  pincode       String
+  phone         String?
+  email         String?
+  lat           Float
+  lng           Float
+  tags          String[]  // Areas served
+  workingHours  String?
+  openedDate    String?
+  placeId       String?   // Google Places ID for reviews
+  description   String?
+  isActive      Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  photos        StorePhoto[]
+  storeProducts StoreProduct[]
+
+  @@map("stores")
+}
+
+model StorePhoto {
+  id        Int      @id @default(autoincrement())
+  storeId   Int
+  store     Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  url       String
+  alt       String?
+  sort      Int      @default(0)
+  createdAt DateTime @default(now())
+
+  @@map("store_photos")
+}
+
+// Junction table for featured products per store
+model StoreProduct {
+  id        Int      @id @default(autoincrement())
+  storeId   Int
+  store     Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  productId Int
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  sort      Int      @default(0)
+  createdAt DateTime @default(now())
+
+  @@unique([storeId, productId])
+  @@map("store_products")
+}
+
+// ==========================================
+// HERO SLIDES
+// ==========================================
+
+model HeroSlide {
+  id        Int      @id @default(autoincrement())
+  image     String
+  title     String
+  subtitle  String?
+  cta       String?
+  link      String?
+  sort      Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("hero_slides")
+}
+
+// ==========================================
+// PAGE TITLES (for PageHeader component)
+// ==========================================
+
+model PageTitle {
+  id        Int      @id @default(autoincrement())
+  slug      String   @unique
+  title     String
+  subtitle  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("page_titles")
+}
+
+// ==========================================
+// NEWSLETTER SUBSCRIBERS
+// ==========================================
+
+model Newsletter {
+  id           Int      @id @default(autoincrement())
+  email        String   @unique
+  isActive     Boolean  @default(true)
+  subscribedAt DateTime @default(now())
+
+  @@map("newsletters")
+}
+
+// ==========================================
+// CONTACT SUBMISSIONS
+// ==========================================
+
+model ContactSubmission {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String
+  phone     String?
+  subject   String?
+  message   String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@map("contact_submissions")
+}
+

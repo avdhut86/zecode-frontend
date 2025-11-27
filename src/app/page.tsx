@@ -1,12 +1,19 @@
 import HeroSlider from "@/components/HeroSlider";
-import CategoryGrid from "@/components/CategoryGrid";
-import { MOCK_DATA } from "@/lib/mock-data";
+import { fetchHeroSlides } from "@/lib/directus";
 
-export default function Home() {
+export default async function Home() {
+  // Fetch data from Directus (with error handling)
+  let heroSlides = null;
+  
+  try {
+    heroSlides = await fetchHeroSlides();
+  } catch (error) {
+    console.error("Failed to fetch homepage data:", error);
+  }
+
   return (
-    <div className="flex flex-col min-h-screen">
-      <HeroSlider />
-      <CategoryGrid />
+    <div style={{ width: '100%', backgroundColor: '#ffffff', minHeight: '100%' }}>
+      <HeroSlider slides={heroSlides || undefined} />
     </div>
   );
 }

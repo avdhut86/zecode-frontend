@@ -33,9 +33,20 @@ yarn-error.log*
 # env files (can opt-in for committing if needed)
 .env*
 
+# Instagram token metadata (contains sensitive info)
+scripts/instagram-token.json
+
 # vercel
 .vercel
 
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+/src/generated/prisma
+
+# Resource files (reference only)
+/resources/
+/ZECODE - Your New Fashion Code*
+*.zip
+*.bak

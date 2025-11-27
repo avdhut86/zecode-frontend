@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zecode Header/Footer Reference</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+    <!-- HEADER - What you should see -->
+    <header class="w-full bg-black text-white sticky top-0 z-50">
+        <!-- Top Utility Bar -->
+        <div class="bg-black border-b border-gray-800">
+            <div class="max-w-7xl mx-auto px-4 md:px-8">
+                <div class="flex justify-end items-center h-10">
+                    <nav class="hidden md:flex gap-6 text-xs uppercase tracking-widest">
+                        <a href="#" class="text-gray-400 hover:text-white">LIT ZONE</a>
+                        <a href="#" class="text-gray-400 hover:text-white">ZECODE NEAR YOU</a>
+                        <a href="#" class="text-gray-400 hover:text-white">ABOUT</a>
+                    </nav>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Header -->
+        <div class="bg-black border-b border-gray-800">
+            <div class="max-w-7xl mx-auto px-4 md:px-8">
+                <div class="flex items-center justify-between h-20">
+                    <!-- Logo -->
+                    <a href="/" class="flex-shrink-0">
+                        <div class="text-white font-bold text-2xl">ZECODE</div>
+                    </a>
+
+                    <!-- Desktop Navigation -->
+                    <nav class="hidden md:flex items-center gap-12">
+                        <a href="#" class="text-sm font-bold uppercase tracking-widest hover:text-gray-300">MEN</a>
+                        <a href="#" class="text-sm font-bold uppercase tracking-widest hover:text-gray-300">WOMEN</a>
+                        <a href="#" class="text-sm font-bold uppercase tracking-widest hover:text-gray-300">KIDS</a>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- CONTENT AREA -->
+    <div class="min-h-screen p-8">
+        <h1 class="text-3xl font-bold mb-4">This is what your header should look like:</h1>
+        <ul class="list-disc pl-6 space-y-2">
+            <li>At the very top: A small black bar with "LIT ZONE | ZECODE NEAR YOU | ABOUT" on the right side</li>
+            <li>Below that: A larger black bar with "ZECODE" logo on the left and "MEN WOMEN KIDS" on the right</li>
+            <li>Both bars have subtle gray borders between them</li>
+            <li>The header sticks to the top when you scroll</li>
+        </ul>
+
+        <h2 class="text-2xl font-bold mt-8 mb-4">And your footer should look like:</h2>
+        <ul class="list-disc pl-6 space-y-2">
+            <li>Black background</li>
+            <li>Four columns: Brand (with logo), Categories, Links, Follow Us</li>
+            <li>Social icons in a row</li>
+            <li>Copyright text at the bottom</li>
+        </ul>
+    </div>
+
+    <!-- FOOTER - What you should see -->
+    <footer class="bg-black text-white border-t border-gray-800 mt-auto">
+        <div class="max-w-7xl mx-auto px-4 md:px-8 py-12">
+            <!-- Main Footer Content -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+                <!-- Brand Section -->
+                <div class="space-y-4">
+                    <a href="/">
+                        <div class="text-white font-bold text-2xl">ZECODE</div>
+                    </a>
+                    <p class="text-sm text-gray-400">
+                        Find your fashion code @ZECODE
+                    </p>
+                </div>
+
+                <!-- Categories -->
+                <div>
+                    <h3 class="text-sm font-bold uppercase tracking-widest mb-4">Categories</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-sm text-gray-400 hover:text-white">Men</a></li>
+                        <li><a href="#" class="text-sm text-gray-400 hover:text-white">Women</a></li>
+                        <li><a href="#" class="text-sm text-gray-400 hover:text-white">Kids</a></li>
+                    </ul>
+                </div>
+
+                <!-- Links -->
+                <div>
+                    <h3 class="text-sm font-bold uppercase tracking-widest mb-4">Links</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-sm text-gray-400 hover:text-white">About Us</a></li>
+                        <li><a href="#" class="text-sm text-gray-400 hover:text-white">Store Locator</a></li>
+                    </ul>
+                </div>
+
+                <!-- Social -->
+                <div>
+                    <h3 class="text-sm font-bold uppercase tracking-widest mb-4">Follow Us</h3>
+                    <div class="flex gap-3">
+                        <div class="w-10 h-10 rounded-full border border-gray-700 flex items-center justify-center text-gray-400">F</div>
+                        <div class="w-10 h-10 rounded-full border border-gray-700 flex items-center justify-center text-gray-400">X</div>
+                        <div class="w-10 h-10 rounded-full border border-gray-700 flex items-center justify-center text-gray-400">I</div>
+                        <div class="w-10 h-10 rounded-full border border-gray-700 flex items-center justify-center text-gray-400">Y</div>
+                        <div class="w-10 h-10 rounded-full border border-gray-700 flex items-center justify-center text-gray-400">T</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Copyright -->
+            <div class="border-t border-gray-800 pt-6 text-center">
+                <p class="text-xs text-gray-500">
+                    © 2025 ZECODE. All rights reserved.
+                </p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

@@ -1,72 +1,189 @@
+// src/app/lit-zone/page.tsx
 "use client";
 
+import { useEffect, useState } from "react";
+import PageHeader from "@/components/PageHeader";
+
+/**
+ * Lit Zone page
+ *
+ * - Fetches from /api/instagram/latest (server side) to keep tokens secret
+ * - Allows manual additions stored in localStorage (loading only, management UI removed)
+ * - Responsive, accessible grid
+ */
+
+type Reel = {
+  id: string;
+  title?: string;
+  caption?: string;
+  media_type?: string;
+  media_url?: string | null;
+  thumbnail_url?: string | null;
+  permalink?: string | null;
+  timestamp?: string | null;
+  source?: "manual" | "import";
+};
+
+const LOCAL_KEY = "litzone_manual_reels_v1";
+
+function formatDate(ts?: string | null) {
+  if (!ts) return "";
+  try {
+    const d = new Date(ts);
+    return d.toLocaleDateString();
+  } catch {
+    return "";
+  }
+}
+
 export default function LitZonePage() {
-    // Mock Reels Data
-    const reels = [
-        { id: 1, title: "Summer Vibes", views: "1.2M", likes: "45K" },
-        { id: 2, title: "New Collection Drop", views: "850K", likes: "32K" },
-        { id: 3, title: "Behind the Scenes", views: "2.1M", likes: "120K" },
-        { id: 4, title: "Street Style", views: "500K", likes: "15K" },
-        { id: 5, title: "Outfit of the Day", views: "900K", likes: "50K" },
-        { id: 6, title: "Sneaker Head", views: "1.5M", likes: "80K" },
-        { id: 7, title: "Urban Culture", views: "750K", likes: "28K" },
-        { id: 8, title: "Fashion Week", views: "3.2M", likes: "200K" },
-    ];
+  const [items, setItems] = useState<Reel[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-    return (
-        <main className="min-h-screen bg-black text-white py-12">
-            <div className="container mx-auto px-4">
-                <div className="text-center mb-12">
-                    <h1 className="font-din text-5xl md:text-7xl font-bold uppercase tracking-tighter mb-4 text-brand-red">
-                        LIT ZONE
-                    </h1>
-                    <p className="text-gray-400 text-lg max-w-2xl mx-auto">
-                        Check out the latest drops, trends, and vibes from our Instagram. #ZECODE #LIT
-                    </p>
+  // load manual items from localStorage and keep them first
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(LOCAL_KEY);
+      const manual: Reel[] = raw ? JSON.parse(raw) : [];
+      // ensure we render manual first, then nothing else yet
+      setItems(manual.map((m) => ({ ...m, source: "manual" })));
+    } catch {
+      setItems([]);
+    }
+  }, []);
+
+  // Fetch from our server API which proxies IG. This keeps tokens secure.
+  async function fetchLatest() {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/instagram/latest");
+      if (!res.ok) {
+        const txt = await res.text();
+        throw new Error(txt || `Fetch failed (${res.status})`);
+      }
+      const json = await res.json();
+
+      // Check if API returned a message (e.g., credentials not configured)
+      if (json.message) {
+        setError(json.message);
+        return;
+      }
+
+      const data = Array.isArray(json.data) ? json.data : json;
+      // normalize items from IG
+      const imported: Reel[] = (data || []).map((m: any) => ({
+        id: `ig_${m.id}`,
+        title: m.caption ? (m.caption.length > 80 ? m.caption.slice(0, 80) + "…" : m.caption) : "Instagram",
+        caption: m.caption || "",
+        media_type: m.media_type,
+        media_url: m.media_url || null,
+        thumbnail_url: m.thumbnail_url || m.media_url || null,
+        permalink: m.permalink || null,
+        timestamp: m.timestamp || null,
+        source: "import",
+      }));
+
+      // merge: manual items (from localStorage) should remain at top; dedupe imported against existing ids
+      const rawManual = JSON.parse(localStorage.getItem(LOCAL_KEY) || "[]") as Reel[];
+      const manualFirst = (rawManual || []).map((m) => ({ ...m, source: "manual" as const }));
+      const existingIds = new Set(manualFirst.map((m) => m.id));
+      const filteredImported = imported.filter((imp) => !existingIds.has(imp.id));
+      setItems([...manualFirst, ...filteredImported]);
+    } catch (err: any) {
+      console.error(err);
+      setError(err.message || "Failed to fetch latest");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  // Auto-fetch on mount
+  useEffect(() => {
+    fetchLatest();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  return (
+    <div className="min-h-screen bg-[#f5f5f5] text-black">
+      {/* HEADER */}
+      <PageHeader pageKey="lit-zone" defaultTitle="LIT ZONE" subtitle="Curated reels and edits from our Instagram" />
+
+      {/* FEED */}
+      <section className="w-full max-w-7xl mx-auto px-6 md:px-12 py-12">
+        {error && (
+          <div className={`mb-6 px-4 py-3 rounded ${error.includes("not configured")
+            ? "bg-blue-100 border border-blue-300 text-blue-800"
+            : "bg-red-100 border border-red-300 text-red-800"
+            }`}>
+            <strong className="mr-2">{error.includes("not configured") ? "Info:" : "Error:"}</strong> {error}
+          </div>
+        )}
+
+        {loading ? (
+          <div className="py-24 text-center text-gray-500">Loading latest reels…</div>
+        ) : items.length === 0 ? (
+          <div className="text-center py-16 text-gray-500">No reels yet.</div>
+        ) : (
+          <div className="grid grid-cols-4 gap-6">
+            {items.map((it) => (
+              <article
+                key={it.id}
+                className="bg-white rounded-xl overflow-hidden border border-gray-200 hover:border-[#C83232] hover:shadow-xl hover:shadow-[#C83232]/10 transition-all duration-300 group"
+                aria-labelledby={`title-${it.id}`}
+              >
+                <a
+                  href={it.permalink || "#"}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block relative w-full"
+                  style={{ paddingBottom: '100%' }}
+                >
+                  <img
+                    src={it.thumbnail_url || it.media_url || "/placeholders/hero-default.jpg"}
+                    alt={it.caption ? it.caption.slice(0, 120) : it.title || "Instagram Reel"}
+                    className="absolute top-0 left-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                    loading="lazy"
+                  />
+                  
+                  {/* Play icon overlay for video content */}
+                  {it.media_type === "VIDEO" && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/40 transition-colors">
+                      <div className="w-16 h-16 bg-white/90 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <svg className="w-8 h-8 text-black ml-1" fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M8 5v14l11-7z"/>
+                        </svg>
+                      </div>
+                    </div>
+                  )}
+                </a>
+
+                <div className="p-4 bg-white">
+                  <h3 id={`title-${it.id}`} className="text-sm font-semibold text-black line-clamp-2 min-h-[2.5rem]">
+                    {it.title || (it.caption ? it.caption.slice(0, 100) : "Instagram Post")}
+                  </h3>
+                  <div className="mt-3 flex items-center justify-between text-xs text-gray-500">
+                    <span className="flex items-center gap-1">
+                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                      {formatDate(it.timestamp)}
+                    </span>
+                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${
+                      it.source === "manual" 
+                        ? "bg-blue-100 text-blue-700" 
+                        : "bg-pink-100 text-pink-700"
+                    }`}>
+                      {it.source === "manual" ? "Manual" : "Instagram"}
+                    </span>
+                  </div>
                 </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                    {reels.map((reel) => (
-                        <div key={reel.id} className="aspect-[9/16] bg-gray-900 rounded-lg overflow-hidden relative group cursor-pointer border border-gray-800 hover:border-brand-red transition-colors">
-                            {/* Placeholder for Video/Image */}
-                            <div className="absolute inset-0 flex items-center justify-center bg-gray-800 group-hover:bg-gray-700 transition-colors">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-12 h-12 text-gray-500 group-hover:text-white transition-colors">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z" />
-                                </svg>
-                            </div>
-
-                            {/* Overlay Info */}
-                            <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/90 to-transparent">
-                                <h3 className="font-bold text-lg mb-1">{reel.title}</h3>
-                                <div className="flex items-center justify-between text-xs text-gray-400">
-                                    <span className="flex items-center gap-1">
-                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3 h-3">
-                                            <path d="M10 12.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5z" />
-                                            <path fillRule="evenodd" d="M.664 10.59a1.651 1.651 0 010-1.186A10.004 10.004 0 0110 3c4.257 0 7.893 2.66 9.336 6.41.147.381.146.804 0 1.186A10.004 10.004 0 0110 17c-4.257 0-7.893-2.66-9.336-6.41zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd" />
-                                        </svg>
-                                        {reel.views}
-                                    </span>
-                                    <span className="flex items-center gap-1">
-                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3 h-3">
-                                            <path d="M9.653 16.915l-.005-.003-.019-.01a20.759 20.759 0 01-1.16-1.106c-.386-.438-.76-.92-1.107-1.436-1.367-2.032-2.17-4.186-2.17-6.005 0-3.07 2.475-5.5 5.5-5.5 1.62 0 3.04.705 4.014 1.82C15.79 3.555 17.21 2.855 18.83 2.855c3.025 0 5.5 2.43 5.5 5.5 0 1.82-.803 3.973-2.169 6.005-.347.515-.721.998-1.107 1.436-.37.417-.76.806-1.16 1.106l-.02.01-.004.002A2.25 2.25 0 019.653 16.915z" />
-                                        </svg>
-                                        {reel.likes}
-                                    </span>
-                                </div>
-                            </div>
-
-                            {/* Instagram Icon */}
-                            <div className="absolute top-3 right-3">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-white">
-                                    <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
-                                    <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
-                                    <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
-                                </svg>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            </div>
-        </main>
-    );
+              </article>
+            ))}
+          </div>
+        )}
+      </section>
+    </div>
+  );
 }

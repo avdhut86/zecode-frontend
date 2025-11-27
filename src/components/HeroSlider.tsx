@@ -1,116 +1,154 @@
+// src/components/HeroSlider.tsx
 "use client";
-import { useState, useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { MOCK_DATA } from "@/lib/mock-data";
+import type { HeroSlide } from "@/lib/directus";
 
-const SLIDES = [
-    {
-        id: 1,
-        image: "/hero-bg.jpg", // Using same image for now, would be different in real app
-        title: "YOUR NEW FASHION CODE",
-        subtitle: "Urban Clothing Stores in India",
-        cta: "FIND YOUR CODE",
-        link: "/store-locator"
-    },
-    {
-        id: 2,
-        image: "/hero-bg.jpg", // Placeholder
-        title: "LIT ZONE DROPS",
-        subtitle: "Exclusive Streetwear Collection",
-        cta: "SHOP NOW",
-        link: "/lit-zone"
-    },
-    {
-        id: 3,
-        image: "/hero-bg.jpg", // Placeholder
-        title: "NEW ARRIVALS",
-        subtitle: "Check out the latest trends",
-        cta: "EXPLORE",
-        link: "/men"
-    }
+/**
+ * Hero Slider featuring main offers and category promotions
+ * Each slide showcases a category (Men, Women, Kids) or special offers
+ */
+
+const DEFAULT_SLIDES: HeroSlide[] = [
+  {
+    id: 1,
+    image: "/hero/hero1.png",
+    title: "YOUR NEW FASHION CODE",
+    subtitle: "Discover Urban Fashion at 50+ Stores Across India",
+    cta: "FIND A STORE NEAR YOU",
+    link: "/store-locator-map",
+  },
+  {
+    id: 2,
+    image: "/categories/men.jpg",
+    title: "MEN'S COLLECTION",
+    subtitle: "Bold Streetwear • Casual Essentials • Urban Edge",
+    cta: "SHOP MEN",
+    link: "/men",
+  },
+  {
+    id: 3,
+    image: "/categories/women.jpg",
+    title: "WOMEN'S COLLECTION",
+    subtitle: "Trendy Styles • Effortless Fashion • Express Yourself",
+    cta: "SHOP WOMEN",
+    link: "/women",
+  },
+  {
+    id: 4,
+    image: "/categories/kids.jpg",
+    title: "KIDS' COLLECTION",
+    subtitle: "Fun & Stylish • Comfortable Fits • Made for Play",
+    cta: "SHOP KIDS",
+    link: "/kids",
+  },
 ];
 
-export default function HeroSlider() {
-    const [currentSlide, setCurrentSlide] = useState(0);
+interface HeroSliderProps {
+  slides?: HeroSlide[];
+}
 
-    useEffect(() => {
-        const timer = setInterval(() => {
-            setCurrentSlide((prev) => (prev + 1) % SLIDES.length);
-        }, 5000);
-        return () => clearInterval(timer);
-    }, []);
+export default function HeroSlider({ slides }: HeroSliderProps) {
+  const SLIDES = slides && slides.length > 0 ? slides : DEFAULT_SLIDES;
+  const [current, setCurrent] = useState(0);
+  const timeoutRef = useRef<number | null>(null);
 
-    const nextSlide = () => {
-        setCurrentSlide((prev) => (prev + 1) % SLIDES.length);
+  useEffect(() => {
+    // autoplay
+    const play = () => {
+      timeoutRef.current = window.setTimeout(() => {
+        setCurrent((c) => (c + 1) % SLIDES.length);
+      }, 5500);
     };
-
-    const prevSlide = () => {
-        setCurrentSlide((prev) => (prev - 1 + SLIDES.length) % SLIDES.length);
+    play();
+    return () => {
+      if (timeoutRef.current) window.clearTimeout(timeoutRef.current);
     };
+  }, [current]);
 
-    return (
-        <div className="relative h-[80vh] w-full overflow-hidden bg-black">
-            {SLIDES.map((slide, index) => (
-                <div
-                    key={slide.id}
-                    className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${index === currentSlide ? "opacity-100" : "opacity-0"
-                        }`}
-                >
-                    <Image
-                        src={slide.image}
-                        alt={slide.title}
-                        fill
-                        className="object-cover opacity-60"
-                        priority={index === 0}
-                    />
-                    <div className="absolute inset-0 flex flex-col items-center justify-center text-center text-white px-4">
-                        <h2 className="font-din text-2xl md:text-4xl mb-2 tracking-widest uppercase opacity-0 animate-fadeInUp" style={{ animationDelay: "0.2s", animationFillMode: "forwards" }}>
-                            {slide.subtitle}
-                        </h2>
-                        <h1 className="font-din text-6xl md:text-8xl font-bold mb-8 tracking-tighter uppercase opacity-0 animate-fadeInUp" style={{ animationDelay: "0.4s", animationFillMode: "forwards" }}>
-                            {slide.title}
-                        </h1>
-                        <Link
-                            href={slide.link}
-                            className="bg-white text-black px-8 py-3 font-bold uppercase tracking-widest hover:bg-gray-200 transition-colors opacity-0 animate-fadeInUp"
-                            style={{ animationDelay: "0.6s", animationFillMode: "forwards" }}
-                        >
-                            {slide.cta}
-                        </Link>
-                    </div>
+  const goTo = (index: number) => {
+    setCurrent(index % SLIDES.length);
+    if (timeoutRef.current) window.clearTimeout(timeoutRef.current);
+  };
+
+  return (
+    <div className="relative w-full overflow-hidden h-[68vh] md:h-[80vh]">
+      {/* Slides: stacked absolutely */}
+      {SLIDES.map((s, idx) => {
+        const active = idx === current;
+        return (
+          <div
+            key={s.id}
+            aria-hidden={!active}
+            className={[
+              "absolute inset-0 w-full h-full transition-all duration-700 ease-[cubic-bezier(.2,.9,.2,1)]",
+              active ? "opacity-100 translate-y-0 z-20" : "opacity-0 -translate-y-4 z-10 pointer-events-none",
+            ].join(" ")}
+          >
+            {/* Ensure container provides positioning for next/image fill */}
+            <div className="relative w-full h-full bg-black/5">
+              <Image
+                src={s.image}
+                alt={s.title}
+                fill
+                style={{ objectFit: "cover", objectPosition: "center" }}
+                sizes="100vw"
+                priority={idx === 0}
+              />
+              {/* Overlay / hero content */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent flex items-center justify-center">
+                <div className="max-w-6xl w-full px-6 md:px-12 text-center">
+                  <h1 className="text-white text-3xl md:text-6xl font-bold tracking-wide uppercase drop-shadow-lg font-din">
+                    {s.title}
+                  </h1>
+                  <p className="text-white/90 mt-3 md:mt-5 text-sm md:text-xl tracking-wider">
+                    {s.subtitle}
+                  </p>
+                  <Link
+                    href={s.link}
+                    className="inline-block mt-6 md:mt-10 bg-[#C83232] hover:bg-[#a02828] text-white px-8 py-4 uppercase text-sm md:text-lg tracking-widest font-bold rounded-none shadow-lg transition-all duration-300 transform hover:scale-105"
+                  >
+                    {s.cta} →
+                  </Link>
                 </div>
-            ))}
-
-            {/* Navigation Arrows */}
-            <button
-                onClick={prevSlide}
-                className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 text-white p-3 rounded-full hover:bg-black/80 transition-colors"
-            >
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
-                </svg>
-            </button>
-            <button
-                onClick={nextSlide}
-                className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 text-white p-3 rounded-full hover:bg-black/80 transition-colors"
-            >
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-                </svg>
-            </button>
-
-            {/* Dots */}
-            <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-3">
-                {SLIDES.map((_, index) => (
-                    <button
-                        key={index}
-                        onClick={() => setCurrentSlide(index)}
-                        className={`w-3 h-3 rounded-full transition-colors ${index === currentSlide ? "bg-white" : "bg-white/50"
-                            }`}
-                    />
-                ))}
+              </div>
             </div>
-        </div>
-    );
+          </div>
+        );
+      })}
+
+      {/* Controls: previous / next */}
+      <div className="absolute inset-y-0 left-3 flex items-center z-30">
+        <button
+          aria-label="Previous slide"
+          onClick={() => goTo((current - 1 + SLIDES.length) % SLIDES.length)}
+          className="bg-black/50 hover:bg-black/60 text-white p-2 rounded-full"
+        >
+          ‹
+        </button>
+      </div>
+      <div className="absolute inset-y-0 right-3 flex items-center z-30">
+        <button
+          aria-label="Next slide"
+          onClick={() => goTo((current + 1) % SLIDES.length)}
+          className="bg-black/50 hover:bg-black/60 text-white p-2 rounded-full"
+        >
+          ›
+        </button>
+      </div>
+
+      {/* Pagination bullets */}
+      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 flex gap-3">
+        {SLIDES.map((_, i) => (
+          <button
+            key={i}
+            aria-label={`Go to slide ${i + 1}`}
+            onClick={() => goTo(i)}
+            className={`w-3 h-3 rounded-full transition-all ${i === current ? "bg-white scale-110" : "bg-white/40"}`}
+          />
+        ))}
+      </div>
+    </div>
+  );
 }

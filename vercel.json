@@ -1,0 +1,9 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "prisma generate && next build",
+  "framework": "nextjs",
+  "regions": ["bom1"],
+  "env": {
+    "NODE_TLS_REJECT_UNAUTHORIZED": "1"
+  }
+}

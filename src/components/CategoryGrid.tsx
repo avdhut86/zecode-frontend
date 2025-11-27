@@ -1,30 +1,138 @@
 import Link from "next/link";
 import { MOCK_DATA } from "@/lib/mock-data";
+import type { Category } from "@/lib/directus";
 
-export default function CategoryGrid() {
+interface CategoryGridProps {
+  categories?: Category[];
+}
+
+export default function CategoryGrid({ categories }: CategoryGridProps) {
+    // Use provided categories or fallback to MOCK_DATA
+    const displayCategories = categories && categories.length > 0 
+        ? categories 
+        : MOCK_DATA.categories.map(cat => ({
+            id: cat.id,
+            title: cat.title,
+            slug: cat.title.toLowerCase(),
+            image: cat.image,
+            link: cat.link,
+            subcategories: cat.subcategories
+        }));
     return (
-        <section className="py-0">
-            <div className="grid grid-cols-1 md:grid-cols-3 h-auto md:h-[600px]">
-                {MOCK_DATA.categories.map((cat) => (
-                    <Link
-                        key={cat.id}
-                        href={cat.link}
-                        className="group relative block h-[400px] md:h-full overflow-hidden border-r border-white/10 last:border-r-0"
-                    >
-                        {/* Background Placeholder */}
-                        <div className="absolute inset-0 bg-gray-800 group-hover:scale-105 transition-transform duration-700"></div>
+        <section style={{ padding: '80px 0', margin: 0, width: '100%', backgroundColor: '#ffffff' }}>
+            {/* Section Header */}
+            <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 32px 56px' }}>
+                <h2 style={{ 
+                    fontSize: '48px', 
+                    fontWeight: '700', 
+                    textAlign: 'center', 
+                    marginBottom: '16px', 
+                    color: '#000000',
+                    fontFamily: '"DIN Condensed", "League Gothic", system-ui, sans-serif',
+                    letterSpacing: '2px',
+                    textTransform: 'uppercase'
+                }}>
+                    Shop By Category
+                </h2>
+                <p style={{ fontSize: '18px', textAlign: 'center', color: '#666666', maxWidth: '600px', margin: '0 auto', fontWeight: '400', letterSpacing: '0.3px' }}>
+                    Discover our curated collections for men, women, and kids. Urban fashion that defines your style.
+                </p>
+            </div>
 
-                        {/* Overlay */}
-                        <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors duration-300"></div>
+            {/* Category Grid */}
+            <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 32px' }}>
+                <div style={{ 
+                    display: 'grid', 
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+                    gap: '32px'
+                }}>
+                    {displayCategories.map((cat) => (
+                        <Link
+                            key={cat.id}
+                            href={cat.link}
+                            className="group"
+                            style={{ 
+                                position: 'relative',
+                                display: 'block',
+                                height: '500px',
+                                overflow: 'hidden',
+                                borderRadius: '12px',
+                                boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+                                transition: 'transform 0.3s ease, box-shadow 0.3s ease'
+                            }}
+                        >
+                            {/* Background Image using img tag */}
+                            <img
+                                src={cat.image}
+                                alt={cat.title}
+                                style={{
+                                    position: 'absolute',
+                                    top: 0,
+                                    left: 0,
+                                    width: '100%',
+                                    height: '100%',
+                                    objectFit: 'cover',
+                                    transition: 'transform 0.7s ease'
+                                }}
+                                className="group-hover:scale-105"
+                            />
 
-                        {/* Content */}
-                        <div className="absolute inset-0 flex items-center justify-center">
-                            <h2 className="font-din text-5xl md:text-7xl font-bold text-white uppercase tracking-tighter z-10 group-hover:tracking-widest transition-all duration-500">
-                                {cat.title}
-                            </h2>
-                        </div>
-                    </Link>
-                ))}
+                            {/* Overlay */}
+                            <div 
+                                style={{
+                                    position: 'absolute',
+                                    top: 0,
+                                    left: 0,
+                                    width: '100%',
+                                    height: '100%',
+                                    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+                                    transition: 'background-color 0.3s ease'
+                                }}
+                                className="group-hover:bg-black/60"
+                            ></div>
+
+                            {/* Content */}
+                            <div style={{
+                                position: 'absolute',
+                                top: 0,
+                                left: 0,
+                                width: '100%',
+                                height: '100%',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                padding: '32px',
+                                zIndex: 10
+                            }}>
+                                <h3 
+                                    className="font-din group-hover:tracking-widest"
+                                    style={{
+                                        fontSize: '72px',
+                                        fontWeight: '700',
+                                        color: '#ffffff',
+                                        textTransform: 'uppercase',
+                                        letterSpacing: '-0.05em',
+                                        marginBottom: '16px',
+                                        transition: 'letter-spacing 0.5s ease',
+                                        textAlign: 'center'
+                                    }}
+                                >
+                                    {cat.title}
+                                </h3>
+                                <p style={{ 
+                                    color: '#ffffff', 
+                                    fontSize: '16px', 
+                                    textAlign: 'center', 
+                                    opacity: 0.9,
+                                    fontWeight: '500'
+                                }}>
+                                    Explore Collection
+                                </p>
+                            </div>
+                        </Link>
+                    ))}
+                </div>
             </div>
         </section>
     );
