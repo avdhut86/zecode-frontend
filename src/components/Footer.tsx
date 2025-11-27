@@ -61,14 +61,14 @@ export default function Footer({
       <div className="h-[3px] bg-gradient-to-r from-[#C83232] via-[#e63946] to-[#C83232]"></div>
 
       {/* Main Footer Content */}
-      <div className="relative z-10" style={{ maxWidth: '1400px', margin: '0 auto', padding: '32px 32px 24px' }}>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 md:gap-6">
+      <div className="relative z-10" style={{ maxWidth: '1400px', margin: '0 auto', padding: '20px 32px 16px' }}>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 md:gap-6">
           {/* First Column - Categories */}
           <div>
-            <h3 className="text-xs font-bold uppercase tracking-[0.15em] text-white mb-4">
+            <h3 className="text-xs font-bold uppercase tracking-[0.15em] text-white mb-2">
               Categories
             </h3>
-            <ul className="space-y-2">
+            <ul className="space-y-1">
               {[
                 { href: "/men", label: "Men" },
                 { href: "/women", label: "Women" },
@@ -88,10 +88,10 @@ export default function Footer({
 
           {/* Second Column - Quick Links */}
           <div>
-            <h3 className="text-xs font-bold uppercase tracking-[0.15em] text-white mb-4">
+            <h3 className="text-xs font-bold uppercase tracking-[0.15em] text-white mb-2">
               Quick Links
             </h3>
-            <ul className="space-y-2">
+            <ul className="space-y-1">
               {footerLinks.map((link) => (
                 <li key={link.label}>
                   <Link
@@ -107,10 +107,10 @@ export default function Footer({
 
           {/* Third Column - Follow Us */}
           <div>
-            <h3 className="text-xs font-bold uppercase tracking-[0.15em] text-white mb-4">
+            <h3 className="text-xs font-bold uppercase tracking-[0.15em] text-white mb-2">
               Follow Us
             </h3>
-            <div className="flex gap-3 flex-wrap">
+            <div className="flex gap-2 flex-wrap">
               {socialLinks.map((social) => (
                 <a
                   key={social.label}
@@ -128,15 +128,15 @@ export default function Footer({
                 </a>
               ))}
             </div>
-            <p className="text-gray-500 text-xs mt-3">Stay connected with us on social media</p>
+            <p className="text-gray-500 text-xs mt-2">Stay connected with us</p>
           </div>
 
           {/* Fourth Column - Newsletter */}
           <div>
-            <h3 className="text-xs font-bold uppercase tracking-[0.15em] text-white mb-4">
+            <h3 className="text-xs font-bold uppercase tracking-[0.15em] text-white mb-2">
               Newsletter
             </h3>
-            <p className="text-gray-500 text-xs mb-3">Get exclusive offers & updates</p>
+            <p className="text-gray-500 text-xs mb-2">Get exclusive offers & updates</p>
             <div className="flex">
               <input
                 type="email"
@@ -153,8 +153,8 @@ export default function Footer({
 
       {/* Bottom Footer */}
       <div className="relative z-10 border-t border-white/10">
-        <div className="max-w-[1400px] mx-auto px-8 py-4">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-3">
+        <div className="max-w-[1400px] mx-auto px-8 py-3">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-2">
             <p className="text-gray-500 text-xs">
               © {new Date().getFullYear()} ZECODE. All rights reserved.
             </p>

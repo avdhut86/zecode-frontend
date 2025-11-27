@@ -59,7 +59,7 @@ export default function Header() {
         }}
       >
         {/* Top Bar - Promotional Banner with animation */}
-        <div className="relative overflow-hidden bg-gradient-to-r from-[#C83232] via-[#e63946] to-[#C83232] text-white text-center py-1.5 text-xs font-medium tracking-wider">
+        <div className="relative overflow-hidden bg-gradient-to-r from-[#C83232] via-[#e63946] to-[#C83232] text-white text-center py-0.5 text-xs font-medium tracking-wider">
           <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxjaXJjbGUgY3g9IjIwIiBjeT0iMjAiIHI9IjIiIGZpbGw9InJnYmEoMjU1LDI1NSwyNTUsMC4xKSIvPjwvZz48L3N2Zz4=')] opacity-30"></div>
           <span className="relative z-10">🔥 FREE SHIPPING ON ORDERS ABOVE ₹999 | SHOP NOW 🔥</span>
         </div>
@@ -71,7 +71,7 @@ export default function Header() {
           
           <div className="container mx-auto px-4 md:px-6">
             {/* Single Row Header - Logo with Navigation on both sides */}
-            <div className="flex items-center justify-between py-1">
+            <div className="flex items-center justify-between py-0">
               {/* Mobile Menu Button */}
               <button 
                 className="md:hidden text-white p-2 hover:bg-white/10 rounded-lg transition-colors"
@@ -93,7 +93,7 @@ export default function Header() {
                   >
                     <Link 
                       href={category.href} 
-                      className="group flex items-center gap-1 px-4 py-3 rounded-lg hover:bg-white/5 transition-all duration-300"
+                      className="group flex items-center gap-1 px-3 py-2 rounded-lg hover:bg-white/5 transition-all duration-300"
                     >
                       <span className="text-sm font-bold tracking-[0.15em] uppercase text-white/90 group-hover:text-white transition-colors duration-300">
                         {category.label}
