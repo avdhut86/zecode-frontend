@@ -45,6 +45,13 @@ next-env.d.ts
 
 /src/generated/prisma
 
+# Images - now hosted on Cloudinary
+/public/products/
+/public/categories/
+/public/hero/
+/public/brand/
+/public/placeholders/
+
 # Resource files (reference only)
 /resources/
 /ZECODE - Your New Fashion Code*
