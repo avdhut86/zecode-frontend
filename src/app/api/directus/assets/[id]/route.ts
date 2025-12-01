@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const directusUrl = process.env.NEXT_PUBLIC_DIRECTUS_URL || 'http://localhost:8055';
 
   try {
-    const response = await fetch(`${directusUrl}/assets/${params.id}`);
+    const response = await fetch(`${directusUrl}/assets/${id}`);
 
     if (!response.ok) {
       return new NextResponse('Asset not found', { status: 404 });
