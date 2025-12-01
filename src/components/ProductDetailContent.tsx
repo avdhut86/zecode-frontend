@@ -10,7 +10,7 @@ interface ProductDetail {
     name: string;
     category: string;
     categoryLabel?: string;
-    price: number;
+    price: number | null;
     originalPrice?: number;
     image: string;
     gallery?: string[];
@@ -20,7 +20,8 @@ interface ProductDetail {
     reviewCount?: number;
 }
 
-function formatCurrency(value: number) {
+function formatCurrency(value: number | null | undefined) {
+    if (value === null || value === undefined) return '';
     return `₹${value.toLocaleString()}`;
 }
 

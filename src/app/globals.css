@@ -219,3 +219,40 @@ footer { position: relative; z-index: 10; }
 .icon-info-container:hover .icon-info {
   animation: infoWobble 0.4s ease-in-out infinite;
 }
+
+/* ------------------------------------------------
+   V2 Page Styles - Hide original header/footer
+------------------------------------------------ */
+body.v2-active > header,
+body.v2-active > footer,
+body.v2-active > div > header:not(.v2-header-wrapper header),
+body.v2-active > div > footer:not(.v2-footer-wrapper footer) {
+  display: none !important;
+}
+
+body.v2-active > main#main,
+body.v2-active > div > main#main {
+  background-color: transparent !important;
+  padding: 0 !important;
+}
+
+/* ------------------------------------------------
+   V3 Page Styles - Hide original header/footer
+------------------------------------------------ */
+body.v3-active > header,
+body.v3-active > footer,
+body.v3-active > div > header,
+body.v3-active > div > footer {
+  display: none !important;
+}
+
+body.v3-active > main#main,
+body.v3-active > div > main#main {
+  background-color: transparent !important;
+  padding: 0 !important;
+}
+
+/* V3 Parallax smooth scrolling */
+body.v3-active {
+  scroll-behavior: smooth;
+}

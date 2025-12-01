@@ -1,11 +1,49 @@
 "use client";
 import Link from "next/link";
 import Image from "next/image";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTheme } from "@/contexts/ThemeContext";
+import { fetchDirectusNavigation, DirectusNavigationItem, fetchProductCounts } from "@/lib/directus";
 
-// Category data with subcategories
-const CATEGORIES = [
+// Mapping from URL slugs to CMS subcategory values for proper matching
+const SLUG_TO_CMS_SUBCATEGORY: Record<string, string[]> = {
+  // Men
+  'tshirts': ['t', 'tshirt', 't-shirt'],
+  'shirts': ['shirt'],
+  'jeans': ['jean', 'jeans'],
+  'trousers': ['trouser', 'trousers', 'pants', 'pant'],
+  'jackets': ['jacket', 'outerwear'],
+  'shoes': ['shoe', 'flats', 'flat'],
+  // Women
+  'tops': ['top', 'tops'],
+  'dresses': ['dress', 'dresses'],
+  'skirts': ['skirt', 'skirts'],
+  // Kids - special mappings
+  'boys-tshirts': ['t', 'tshirt', 't-shirt'],
+  'girls-tops': ['top', 'tops'],
+  'boys-jeans': ['bottom', 'bottoms', 'jean', 'jeans'],
+  'girls-dresses': ['dress', 'dresses'],
+  // Footwear - gender-based subcategories
+  'men': ['flats', 'flat', 'mules', 'mule', 'sneakers', 'sneaker', 'boots', 'boot', 'loafers', 'loafer', 'sandals', 'sandal'],
+  'women': ['flats', 'flat', 'mules', 'mule', 'heels', 'heel', 'sandals', 'sandal', 'boots', 'boot', 'sneakers', 'sneaker'],
+};
+
+// Type for processed navigation
+type Category = {
+  href: string;
+  label: string;
+  subcategories: { label: string; href: string }[];
+};
+
+type QuickLink = {
+  href: string;
+  label: string;
+  icon?: string;
+  highlight?: boolean;
+};
+
+// Fallback category data
+const DEFAULT_CATEGORIES: Category[] = [
   {
     href: "/men",
     label: "MEN",
@@ -42,12 +80,246 @@ const CATEGORIES = [
       { label: "SHOES", href: "/kids/shoes" },
     ],
   },
+  {
+    href: "/footwear",
+    label: "FOOTWEAR",
+    subcategories: [
+      { label: "MEN'S FOOTWEAR", href: "/footwear/men" },
+      { label: "WOMEN'S FOOTWEAR", href: "/footwear/women" },
+    ],
+  },
 ];
+
+const DEFAULT_QUICK_LINKS: QuickLink[] = [
+  { href: "/lit-zone", label: "LIT ZONE", icon: "🔥", highlight: true },
+  { href: "/store-locator-map", label: "STORES", icon: "📍" },
+  { href: "/about", label: "ABOUT", icon: "ℹ️" },
+];
+
+// Helper to process CMS navigation data into categories and quick links
+function processNavigation(items: DirectusNavigationItem[]): { categories: Category[]; quickLinks: QuickLink[] } {
+  const categories: Category[] = [];
+  const quickLinks: QuickLink[] = [];
+  
+  // First, find all parent items (parent === null)
+  const parentItems = items.filter(item => item.parent === null);
+  
+  parentItems.forEach(parent => {
+    // Check if this is a category (MEN, WOMEN, KIDS, FOOTWEAR) or a quick link
+    const isCategory = ["MEN", "WOMEN", "KIDS", "FOOTWEAR"].includes(parent.label.toUpperCase());
+    
+    if (isCategory) {
+      // Find all children for this parent
+      const children = items
+        .filter(item => item.parent === parent.id)
+        .sort((a, b) => (a.sort || 0) - (b.sort || 0))
+        .map(child => ({
+          label: child.label,
+          href: child.href,
+        }));
+      
+      categories.push({
+        href: parent.href,
+        label: parent.label.toUpperCase(),
+        subcategories: children,
+      });
+    } else {
+      // It's a quick link
+      quickLinks.push({
+        href: parent.href,
+        label: parent.label.toUpperCase(),
+        icon: parent.icon || (parent.highlight ? "🔥" : undefined),
+        highlight: parent.highlight || false,
+      });
+    }
+  });
+  
+  // Sort categories by their sort order
+  categories.sort((a, b) => {
+    const aItem = parentItems.find(p => p.label.toUpperCase() === a.label);
+    const bItem = parentItems.find(p => p.label.toUpperCase() === b.label);
+    return (aItem?.sort || 0) - (bItem?.sort || 0);
+  });
+  
+  return { categories, quickLinks };
+}
 
 export default function Header() {
   const { colors } = useTheme();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+  const [categories, setCategories] = useState<Category[]>(DEFAULT_CATEGORIES);
+  const [quickLinks, setQuickLinks] = useState<QuickLink[]>(DEFAULT_QUICK_LINKS);
+
+  // Fetch navigation from CMS
+  useEffect(() => {
+    async function loadNavigation() {
+      try {
+        const [navItems, counts] = await Promise.all([fetchDirectusNavigation(), fetchProductCounts()]);
+
+        const hasCounts = Array.isArray(counts) && counts.length > 0;
+
+        if (navItems && navItems.length > 0) {
+          const { categories: cmsCategories, quickLinks: cmsQuickLinks } = processNavigation(navItems);
+
+          // If we have counts, filter categories and subcategories to only those with products > 0
+          if (hasCounts) {
+            // Build a map of gender||normalizedSub -> count (only counts > 0)
+            const countsByGenderSub = new Map<string, number>();
+            const availableGenders = new Set<string>();
+            
+            // Normalize subcategory: lowercase, remove non-alphanum
+            const normalizeCmsSub = (s?: string | null) => {
+              if (!s) return "";
+              return s.toString().toLowerCase().replace(/[^a-z0-9]/g, "");
+            };
+
+            counts!.forEach((c) => {
+              const count = c.count || 0;
+              if (count <= 0) return; // Skip subcategories with 0 products
+              
+              const g = (c.gender_category || "").toString().toLowerCase();
+              const sub = normalizeCmsSub(c.subcategory || "");
+              const key = `${g}||${sub}`;
+              countsByGenderSub.set(key, (countsByGenderSub.get(key) || 0) + count);
+              if (g) availableGenders.add(g);
+            });
+
+            // Helper to check if a nav subcategory has products
+            const hasProducts = (gender: string, href: string) => {
+              // Extract slug from href (e.g., "/men/tshirts" -> "tshirts")
+              const parts = href.split('/').filter(Boolean);
+              const slug = parts[parts.length - 1] || '';
+              
+              // Special case for footwear subcategories where slug is the gender (men/women)
+              if (gender === 'footwear' && (slug === 'men' || slug === 'women')) {
+                // Check if there are any footwear products for this gender
+                const footwearMappings = SLUG_TO_CMS_SUBCATEGORY[slug] || ['flats', 'mules', 'heels', 'sandals', 'boots', 'sneakers'];
+                return footwearMappings.some(cmsVal => {
+                  const key = `${slug}||${cmsVal}`;
+                  return (countsByGenderSub.get(key) || 0) > 0;
+                });
+              }
+              
+              // Get CMS subcategory mappings for this slug
+              const cmsMappings = SLUG_TO_CMS_SUBCATEGORY[slug] || [normalizeCmsSub(slug)];
+              
+              // Check if any mapping has products for this gender
+              return cmsMappings.some(cmsVal => {
+                const key = `${gender}||${cmsVal}`;
+                return (countsByGenderSub.get(key) || 0) > 0;
+              });
+            };
+            
+            // Helper to check if footwear category has any products
+            const hasFootwearProducts = () => {
+              const footwearTypes = ['flats', 'flat', 'mules', 'mule', 'heels', 'heel', 'sandals', 'sandal', 'boots', 'boot', 'sneakers', 'sneaker', 'loafers', 'loafer'];
+              // Check for Men's footwear
+              const hasMensFootwear = footwearTypes.some(type => (countsByGenderSub.get(`men||${type}`) || 0) > 0);
+              // Check for Women's footwear
+              const hasWomensFootwear = footwearTypes.some(type => (countsByGenderSub.get(`women||${type}`) || 0) > 0);
+              return hasMensFootwear || hasWomensFootwear;
+            };
+
+            const filteredCats = cmsCategories
+              .map((cat) => {
+                const catGender = cat.label.toString().toLowerCase();
+                
+                // Special handling for Footwear category
+                if (catGender === 'footwear') {
+                  if (!hasFootwearProducts()) return null;
+                  
+                  // Filter footwear subcategories based on gender-specific footwear products
+                  const subcats = (cat.subcategories || []).filter((s) => {
+                    return hasProducts('footwear', s.href);
+                  });
+                  
+                  return {
+                    ...cat,
+                    subcategories: subcats,
+                  };
+                }
+                
+                // Check if this gender has any products at all
+                if (!availableGenders.has(catGender)) return null;
+                
+                // Filter subcategories: only include if gender-specific count > 0
+                const subcats = (cat.subcategories || []).filter((s) => {
+                  return hasProducts(catGender, s.href);
+                });
+
+                // Include category even if no subcategories match (category has products)
+                return {
+                  ...cat,
+                  subcategories: subcats,
+                };
+              })
+              .filter(Boolean) as typeof cmsCategories;
+
+            // Ensure Footwear category is always included if it has products
+            const hasFootwearInFiltered = filteredCats.some(cat => cat.label.toLowerCase() === 'footwear');
+            let finalCategories = filteredCats;
+            
+            if (!hasFootwearInFiltered && hasFootwearProducts()) {
+              // Get Footwear from defaults and filter its subcategories
+              const defaultFootwear = DEFAULT_CATEGORIES.find(cat => cat.label === 'FOOTWEAR');
+              if (defaultFootwear) {
+                const footwearWithFilteredSubs = {
+                  ...defaultFootwear,
+                  subcategories: (defaultFootwear.subcategories || []).filter((s) => {
+                    return hasProducts('footwear', s.href);
+                  }),
+                };
+                finalCategories = [...filteredCats, footwearWithFilteredSubs];
+              }
+            }
+
+            if (finalCategories.length > 0) setCategories(finalCategories);
+            else setCategories(cmsCategories);
+          } else {
+            // No product counts available - use CMS categories but ensure Footwear is included
+            if (cmsCategories.length > 0) {
+              const hasFootwearInCms = cmsCategories.some(cat => cat.label.toLowerCase() === 'footwear');
+              if (!hasFootwearInCms) {
+                const defaultFootwear = DEFAULT_CATEGORIES.find(cat => cat.label === 'FOOTWEAR');
+                if (defaultFootwear) {
+                  setCategories([...cmsCategories, defaultFootwear]);
+                } else {
+                  setCategories(cmsCategories);
+                }
+              } else {
+                setCategories(cmsCategories);
+              }
+            }
+          }
+
+          if (cmsQuickLinks.length > 0) {
+            // Add default icons to quick links if missing
+            const enrichedQuickLinks = cmsQuickLinks.map(link => ({
+              ...link,
+              icon: link.icon || getDefaultIcon(link.label),
+            }));
+            setQuickLinks(enrichedQuickLinks);
+          }
+        }
+      } catch (error) {
+        console.error("Failed to load navigation from CMS:", error);
+        // Keep defaults on error
+      }
+    }
+    loadNavigation();
+  }, []);
+
+  // Helper to get default icon for quick links
+  function getDefaultIcon(label: string): string {
+    const iconMap: Record<string, string> = {
+      "LIT ZONE": "🔥",
+      "STORES": "📍",
+      "ABOUT": "ℹ️",
+      "CONTACT": "📧",
+    };
+    return iconMap[label.toUpperCase()] || "•";
+  }
 
   return (
     <>
@@ -84,7 +356,7 @@ export default function Header() {
 
               {/* Left Nav - Categories with Dropdowns (Desktop) */}
               <nav className="hidden md:flex items-center gap-1">
-                {CATEGORIES.map((category) => (
+                {categories.map((category) => (
                   <div 
                     key={category.href}
                     className="relative"
@@ -93,9 +365,9 @@ export default function Header() {
                   >
                     <Link 
                       href={category.href} 
-                      className="group flex items-center gap-1 px-3 py-2 rounded-lg hover:bg-white/5 transition-all duration-300"
+                      className="group flex items-center gap-1 px-2 py-2 rounded-lg hover:bg-white/5 transition-all duration-300"
                     >
-                      <span className="text-sm font-bold tracking-[0.15em] uppercase text-white/90 group-hover:text-white transition-colors duration-300">
+                      <span className="text-xs font-bold tracking-[0.12em] uppercase text-white/90 group-hover:text-white transition-colors duration-300">
                         {category.label}
                       </span>
                       <svg 
@@ -166,38 +438,19 @@ export default function Header() {
 
               {/* Right Nav - Utility Links (Desktop) */}
               <nav className="hidden md:flex items-center gap-2">
-                <Link 
-                  href="/lit-zone"
-                  className="icon-fire-container flex items-center gap-1.5 px-4 py-2.5 rounded-lg hover:bg-white/5 text-sm font-bold tracking-wider uppercase text-white/90 hover:text-white transition-all duration-300"
-                >
-                  <span className="icon-fire text-base">🔥</span>
-                  <span className="relative">
-                    LIT ZONE
-                    <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-[#C83232] to-[#e63946] transition-all duration-300" style={{ width: '0%' }}></span>
-                  </span>
-                </Link>
-                
-                <Link 
-                  href="/store-locator-map"
-                  className="icon-pin-container flex items-center gap-1.5 px-4 py-2.5 rounded-lg hover:bg-white/5 text-sm font-bold tracking-wider uppercase text-white/90 hover:text-white transition-all duration-300"
-                >
-                  <span className="icon-pin text-base">📍</span>
-                  <span className="relative">
-                    STORES
-                    <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-[#C83232] to-[#e63946] transition-all duration-300" style={{ width: '0%' }}></span>
-                  </span>
-                </Link>
-                
-                <Link 
-                  href="/about"
-                  className="icon-info-container flex items-center gap-1.5 px-4 py-2.5 rounded-lg hover:bg-white/5 text-sm font-bold tracking-wider uppercase text-white/90 hover:text-white transition-all duration-300"
-                >
-                  <span className="icon-info text-base">ℹ️</span>
-                  <span className="relative">
-                    ABOUT
-                    <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-[#C83232] to-[#e63946] transition-all duration-300" style={{ width: '0%' }}></span>
-                  </span>
-                </Link>
+                {quickLinks.map((link) => (
+                  <Link 
+                    key={link.href}
+                    href={link.href}
+                    className={`flex items-center gap-1.5 px-4 py-2.5 rounded-lg hover:bg-white/5 text-sm font-bold tracking-wider uppercase text-white/90 hover:text-white transition-all duration-300 ${link.highlight ? 'icon-fire-container' : ''}`}
+                  >
+                    {link.icon && <span className="text-base">{link.icon}</span>}
+                    <span className="relative">
+                      {link.label}
+                      <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-[#C83232] to-[#e63946] transition-all duration-300" style={{ width: '0%' }}></span>
+                    </span>
+                  </Link>
+                ))}
               </nav>
 
               {/* Placeholder for right side on mobile */}
@@ -251,7 +504,7 @@ export default function Header() {
             Shop By Category
           </p>
           <nav className="flex flex-col gap-1">
-            {CATEGORIES.map((category) => (
+            {categories.map((category) => (
               <div key={category.href} className="border-b border-white/5 last:border-b-0">
                 {/* Category Header - Accordion Toggle */}
                 <button 
@@ -314,18 +567,14 @@ export default function Header() {
             Quick Links
           </p>
           <nav className="flex flex-col gap-1">
-            {[
-              { href: "/lit-zone", label: "LIT ZONE", icon: "🔥" },
-              { href: "/store-locator-map", label: "FIND A STORE", icon: "📍" },
-              { href: "/about", label: "ABOUT US", icon: "ℹ️" },
-            ].map((item) => (
+            {quickLinks.map((item) => (
               <Link 
                 key={item.href}
                 href={item.href} 
                 onClick={() => setMobileMenuOpen(false)}
                 className="group flex items-center gap-3 py-3 px-4 text-white/80 font-medium tracking-wide hover:bg-white/5 rounded-lg transition-all duration-300"
               >
-                <span className="text-lg group-hover:scale-125 transition-transform duration-300">{item.icon}</span>
+                {item.icon && <span className="text-lg group-hover:scale-125 transition-transform duration-300">{item.icon}</span>}
                 <span className="group-hover:translate-x-1 transition-transform duration-300">{item.label}</span>
               </Link>
             ))}

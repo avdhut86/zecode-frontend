@@ -1,23 +1,64 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { fetchStores, Store as DirectusStore } from '@/lib/directus';
 import { STORES } from '@/data/stores';
 import { Store } from '@/types/store';
 import PageHeader from '@/components/PageHeader';
 
+// Map Directus store to local Store type
+function mapDirectusStore(ds: DirectusStore): Store {
+    return {
+        id: String(ds.id),
+        name: ds.name,
+        slug: ds.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+        address: ds.address,
+        city: ds.city,
+        state: ds.state || '',
+        pincode: ds.pincode || '',
+        phone: ds.phone || '',
+        email: ds.email || '',
+        hours: ds.hours || '10:00 AM - 9:00 PM',
+        coordinates: {
+            lat: ds.latitude || 0,
+            lng: ds.longitude || 0
+        },
+        tags: [ds.city, ds.state].filter(Boolean) as string[],
+        image: ds.image || '/placeholders/store.jpg'
+    };
+}
+
 export default function StoreLocatorMapPage() {
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedStore, setSelectedStore] = useState<Store | null>(null);
+    const [stores, setStores] = useState<Store[]>(STORES); // Fallback to local data
+    const [loading, setLoading] = useState(true);
 
-    const stores = STORES;
+    // Fetch stores from Directus on mount
+    useEffect(() => {
+        async function loadStores() {
+            try {
+                const directusStores = await fetchStores();
+                if (directusStores && directusStores.length > 0) {
+                    setStores(directusStores.map(mapDirectusStore));
+                }
+            } catch (error) {
+                console.error('Error fetching stores from CMS:', error);
+                // Keep using fallback STORES data
+            } finally {
+                setLoading(false);
+            }
+        }
+        loadStores();
+    }, []);
 
     const filteredStores = stores.filter(store =>
         store.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         store.city.toLowerCase().includes(searchQuery.toLowerCase()) ||
         store.address.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        store.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
+        (store.tags && store.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase())))
     );
 
     // Google Maps embed URL with all markers

@@ -76,13 +76,6 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     console.error("Failed to fetch global settings:", error);
   }
 
-  // Prepare props for Footer
-  const footerProps = {
-    footerLinks: settings?.footer_nav || undefined,
-    socialLinks: settings?.social_links || undefined,
-    footerText: settings?.footer_text || undefined,
-  };
-
   return (
     <html lang="en" className="h-full">
       <head>
@@ -95,7 +88,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           </a>
           <Header />
           <main id="main" style={{ flex: '1 0 auto', backgroundColor: '#f5f5f5', width: '100%' }}>{children}</main>
-          <Footer {...footerProps} />
+          <Footer />
         </ThemeProvider>
       </body>
     </html>

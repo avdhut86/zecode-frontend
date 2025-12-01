@@ -1,33 +1,33 @@
 import HeroSlider from "@/components/HeroSlider";
-import SubcategoryGrid from "@/components/SubcategoryGrid";
-import { fetchCategoryBySlug, fetchHeroSlides } from "@/lib/directus";
-import { MOCK_DATA } from "@/lib/mock-data";
+import SubcategoryGridDynamic from "@/components/SubcategoryGridDynamic";
+import { fetchHeroSlides } from "@/lib/directus";
+
+// Define subcategories for Men
+const MEN_SUBCATEGORIES = [
+  { title: "T-Shirts", slug: "tshirts" },
+  { title: "Shirts", slug: "shirts" },
+  { title: "Jeans", slug: "jeans" },
+  { title: "Trousers", slug: "trousers" },
+  { title: "Jackets", slug: "jackets" },
+  { title: "Shoes", slug: "shoes" },
+];
 
 export default async function MenPage() {
-  // Try to fetch from Directus
-  let category = null;
   let heroSlides = null;
   
   try {
-    category = await fetchCategoryBySlug("men");
     heroSlides = await fetchHeroSlides();
   } catch (error) {
-    console.error("Failed to fetch men category data:", error);
-  }
-  
-  // Fallback to MOCK_DATA if Directus fails
-  const menCategory = category || MOCK_DATA.categories.find(cat => cat.title === "MEN");
-  
-  if (!menCategory || !menCategory.subcategories) {
-    return <div>Category not found</div>;
+    console.error("Failed to fetch hero slides:", error);
   }
 
   return (
-    <div style={{ minHeight: '100%', backgroundColor: '#ffffff' }}>
+    <div style={{ minHeight: "100%", backgroundColor: "#ffffff" }}>
       <HeroSlider slides={heroSlides || undefined} />
-      <SubcategoryGrid 
-        title={menCategory.title} 
-        subcategories={menCategory.subcategories} 
+      <SubcategoryGridDynamic 
+        title="Men" 
+        categorySlug="men"
+        subcategories={MEN_SUBCATEGORIES} 
       />
     </div>
   );
