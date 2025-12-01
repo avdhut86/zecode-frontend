@@ -11,7 +11,7 @@ import PageHeader from '@/components/PageHeader';
 // Map Directus store to local Store type
 function mapDirectusStore(ds: DirectusStore): Store {
     return {
-        id: String(ds.id),
+        id: ds.id,
         name: ds.name,
         slug: ds.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
         address: ds.address,
@@ -20,13 +20,10 @@ function mapDirectusStore(ds: DirectusStore): Store {
         pincode: ds.pincode || '',
         phone: ds.phone || '',
         email: ds.email || '',
-        hours: ds.hours || '10:00 AM - 9:00 PM',
-        coordinates: {
-            lat: ds.latitude || 0,
-            lng: ds.longitude || 0
-        },
+        lat: ds.latitude || 0,
+        lng: ds.longitude || 0,
         tags: [ds.city, ds.state].filter(Boolean) as string[],
-        image: ds.image || '/placeholders/store.jpg'
+        workingHours: ds.hours || '10:00 AM - 9:00 PM',
     };
 }
 
