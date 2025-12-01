@@ -76,6 +76,11 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: "https",
+        hostname: "zecode-directus.onrender.com",
+        pathname: "/assets/**",
+      },
+      {
+        protocol: "https",
         hostname: "maps.googleapis.com",
         pathname: "/maps/api/place/photo/**",
       },
