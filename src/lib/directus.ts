@@ -365,8 +365,8 @@ export async function fetchProductCounts(): Promise<ProductCount[] | null> {
         out.push({ gender_category: gender || null, subcategory: sub || null, count: v });
       }
       return out;
-    } catch (e) {
-      console.error('fetchProductCounts fallback failed:', e?.message ?? e);
+    } catch (e: unknown) {
+      console.error('fetchProductCounts fallback failed:', e instanceof Error ? e.message : e);
       return null;
     }
   }
