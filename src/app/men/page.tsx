@@ -2,6 +2,9 @@ import HeroSlider from "@/components/HeroSlider";
 import SubcategoryGridDynamic from "@/components/SubcategoryGridDynamic";
 import { fetchHeroSlides } from "@/lib/directus";
 
+// Force dynamic rendering to prevent build-time API calls
+export const dynamic = 'force-dynamic';
+
 // Define subcategories for Men
 const MEN_SUBCATEGORIES = [
   { title: "T-Shirts", slug: "tshirts" },

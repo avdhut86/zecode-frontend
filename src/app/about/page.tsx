@@ -1,6 +1,9 @@
 import PageHeader from "@/components/PageHeader";
 import { fetchPage } from "@/lib/directus";
 
+// Force dynamic rendering to prevent build-time API calls
+export const dynamic = 'force-dynamic';
+
 // Default content if CMS is unavailable
 const DEFAULT_CONTENT = {
     lead: "ZECODE is more than just a clothing brand; it's a movement. We are redefining urban fashion in India with styles that speak to the modern generation.",

@@ -4,6 +4,9 @@ import ProductDetailContent from "@/components/ProductDetailContent";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+// Force dynamic rendering to prevent build-time API calls
+export const dynamic = 'force-dynamic';
+
 const SUBCATEGORY_MAP: Record<string, string | string[]> = {
   'tops': ['Top', 'Tops'],
   'blouses': 'Blouse',

@@ -1,6 +1,9 @@
 import HeroSlider from "@/components/HeroSlider";
 import { fetchHeroSlides } from "@/lib/directus";
 
+// Force dynamic rendering to prevent build-time API calls
+export const dynamic = 'force-dynamic';
+
 export default async function Home() {
   // Fetch data from Directus (with error handling)
   let heroSlides = null;

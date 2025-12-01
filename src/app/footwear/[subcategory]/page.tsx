@@ -4,6 +4,9 @@ import ProductDetailContent from "@/components/ProductDetailContent";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+// Force dynamic rendering to prevent build-time API calls
+export const dynamic = 'force-dynamic';
+
 // Map subcategory slugs to CMS subcategory values for footwear
 const SUBCATEGORY_MAP: Record<string, string | string[]> = {
   'men': ['Flats', 'Mules', 'Sneakers', 'Boots', 'Loafers', 'Sandals'],
