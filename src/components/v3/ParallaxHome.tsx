@@ -326,14 +326,14 @@ const ParallaxHome: React.FC = () => {
       <CategorySection
         title="Men's Collection"
         subtitle="Refined essentials and contemporary pieces designed for the modern gentleman. From tailored fits to casual comfort."
-        image="/categories/men-category.jpg"
+        image="https://res.cloudinary.com/ds8llatku/image/upload/zecode/banners/categories/category_men.png"
         link="/category/men"
       />
       
       <CategorySection
         title="Women's Collection"
         subtitle="Elegance redefined with timeless silhouettes and modern designs. Discover pieces that celebrate every occasion."
-        image="/categories/women-category.jpg"
+        image="https://res.cloudinary.com/ds8llatku/image/upload/zecode/banners/categories/category_women.png"
         link="/category/women"
         reverse
       />
@@ -341,8 +341,16 @@ const ParallaxHome: React.FC = () => {
       <CategorySection
         title="Kids' Collection"
         subtitle="Playful styles with comfort at heart. Clothing that moves with them through every adventure."
-        image="/categories/kids-category.jpg"
+        image="https://res.cloudinary.com/ds8llatku/image/upload/zecode/banners/categories/category_kids.png"
         link="/category/kids"
+      />
+
+      <CategorySection
+        title="Footwear Collection"
+        subtitle="Step out in style with our curated selection of footwear for every occasion."
+        image="https://res.cloudinary.com/ds8llatku/image/upload/zecode/banners/categories/category_footwear.png"
+        link="/category/footwear"
+        reverse
       />
 
       {/* Newsletter section with parallax */}
