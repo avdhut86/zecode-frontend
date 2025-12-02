@@ -13,7 +13,7 @@ import { type HeroSlide, fileUrl } from "@/lib/directus";
 const DEFAULT_SLIDES: HeroSlide[] = [
   {
     id: 1,
-    image: "/hero/hero_group.png",
+    image: "/hero/hero1.png",
     title: "YOUR NEW FASHION CODE",
     subtitle: "Discover Urban Fashion at 50+ Stores Across India",
     cta: "FIND A STORE NEAR YOU",
