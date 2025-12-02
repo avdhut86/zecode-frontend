@@ -639,50 +639,62 @@ export default function VirtualTryOn({
 
           {/* Main canvas area */}
           <div className="relative aspect-video bg-gray-900 rounded-lg overflow-hidden">
-            {/* Video element (hidden, used for capture) */}
+            {/* Video element - visible ONLY when webcam mode and pose not yet detected */}
             <video
               ref={videoRef}
-              className="hidden"
+              className={`w-full h-full object-contain ${
+                state.mode === 'webcam' && state.status !== 'ready' 
+                  ? 'block' // Show video directly when camera is starting
+                  : 'hidden'
+              }`}
               playsInline
               muted
+              autoPlay
+              style={{ transform: 'scaleX(-1)' }} // Mirror for selfie view
             />
 
-            {/* Canvas for rendering */}
+            {/* Canvas for rendering - shows when pose detected or upload mode */}
             <canvas
               ref={canvasRef}
-              className="w-full h-full object-contain"
+              className={`w-full h-full object-contain ${
+                state.mode === 'webcam' && state.status !== 'ready' 
+                  ? 'hidden' // Hide canvas until pose is detected
+                  : ''
+              }`}
             />
 
-            {/* Loading overlay - different styles for webcam vs upload */}
-            {(state.status === 'loading' || state.status === 'detecting') && (
+            {/* Loading overlay - ONLY show when NOT in webcam mode */}
+            {(state.status === 'loading' || state.status === 'detecting') && state.mode !== 'webcam' && (
               <div className={`absolute inset-0 flex flex-col items-center justify-center ${
-                state.mode === 'webcam'
-                  ? 'bg-transparent' // Fully transparent for webcam - show camera feed
-                  : state.mode === 'upload' && state.status === 'detecting' 
-                    ? 'bg-black/60' // Semi-transparent when showing uploaded image
-                    : 'bg-gray-900/90' // More opaque for initial loading
+                state.mode === 'upload' && state.status === 'detecting' 
+                  ? 'bg-black/60' // Semi-transparent when showing uploaded image
+                  : 'bg-gray-900/90' // More opaque for initial loading
               }`}>
-                <div className={`px-8 py-6 rounded-xl backdrop-blur-sm ${
-                  state.mode === 'webcam' ? 'bg-black/80 absolute bottom-4' : 'bg-black/70'
-                }`}>
+                <div className="px-8 py-6 rounded-xl backdrop-blur-sm bg-black/70">
                   <div className="flex justify-center">
                     <SpinnerIcon />
                   </div>
                   <p className="mt-4 text-white text-center font-medium">
                     {state.status === 'loading' 
                       ? 'Loading AI models...' 
-                      : state.mode === 'webcam'
-                        ? 'Initializing pose detection...'
-                        : 'Detecting pose...'}
+                      : 'Detecting pose...'}
                   </p>
                   <p className="mt-1 text-sm text-gray-300 text-center">
                     {state.status === 'loading' 
                       ? 'This may take a moment on first load' 
-                      : state.mode === 'webcam'
-                        ? 'Stand back so your upper body is visible'
-                        : 'Analyzing your photo'}
+                      : 'Analyzing your photo'}
                   </p>
                 </div>
+              </div>
+            )}
+            
+            {/* Webcam status indicator - shows at bottom without blocking view */}
+            {state.mode === 'webcam' && state.status === 'detecting' && (
+              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 px-4 py-2 bg-black/70 rounded-full backdrop-blur-sm">
+                <p className="text-white text-sm flex items-center gap-2">
+                  <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                  Camera active - Position yourself in frame
+                </p>
               </div>
             )}
 
@@ -690,7 +702,7 @@ export default function VirtualTryOn({
             {state.status === 'ready' && state.mode !== 'webcam' && !uploadedImageRef.current && (
               <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-900/80">
                 <p className="text-white text-lg mb-4">Choose an option to try on this garment</p>
-                <p className="text-gray-500 text-xs mb-2">v2.1</p>
+                <p className="text-gray-500 text-xs mb-2">v3.0</p>
                 <div className="flex gap-4">
                   <button
                     onClick={startWebcam}
