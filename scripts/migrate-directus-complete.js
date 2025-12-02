@@ -8,8 +8,18 @@ process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
 const LOCAL_URL = 'http://127.0.0.1:8055';
 const RENDER_URL = 'https://zecode-directus.onrender.com';
-const ADMIN_EMAIL = 'zecode@siyaram.com';
-const ADMIN_PASSWORD = 'SSML@$2025';
+// Use environment variables for credentials
+// Set these before running:
+//   $env:DIRECTUS_ADMIN_EMAIL='your-email'
+//   $env:DIRECTUS_ADMIN_PASSWORD='your-password'
+const ADMIN_EMAIL = process.env.DIRECTUS_ADMIN_EMAIL;
+const ADMIN_PASSWORD = process.env.DIRECTUS_ADMIN_PASSWORD;
+
+if (!ADMIN_EMAIL || !ADMIN_PASSWORD) {
+  console.error('❌ Missing Directus credentials!');
+  console.error('Set environment variables: DIRECTUS_ADMIN_EMAIL, DIRECTUS_ADMIN_PASSWORD');
+  process.exit(1);
+}
 
 let accessToken = null;
 

@@ -6,12 +6,22 @@ const path = require('path');
 // Disable SSL verification (needed for some networks)
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
-// Configure Cloudinary
+// Configure Cloudinary - use environment variables
+// Set these before running:
+//   $env:CLOUDINARY_CLOUD_NAME='your-cloud-name'
+//   $env:CLOUDINARY_API_KEY='your-api-key'
+//   $env:CLOUDINARY_API_SECRET='your-api-secret'
 cloudinary.config({
-  cloud_name: 'ds8llatku',
-  api_key: '939124588296858',
-  api_secret: 'ZCkp5F8KYptK0_W0U67cWT0NoFU'
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
 });
+
+if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {
+  console.error('❌ Missing Cloudinary credentials!');
+  console.error('Set environment variables: CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET');
+  process.exit(1);
+}
 
 const PUBLIC_DIR = path.join(__dirname, '..', 'public');
 
