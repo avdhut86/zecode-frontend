@@ -3,7 +3,8 @@ import SubcategoryGridDynamic from "@/components/SubcategoryGridDynamic";
 import { fetchHeroSlides } from "@/lib/directus";
 
 // Force dynamic rendering to prevent build-time API calls
-export const dynamic = 'force-dynamic';
+// Use ISR - revalidate every 5 minutes
+export const revalidate = 300;
 
 // Define subcategories for Kids
 const KIDS_SUBCATEGORIES = [
@@ -37,3 +38,4 @@ export default function KidsPage() {
     </div>
   );
 }
+

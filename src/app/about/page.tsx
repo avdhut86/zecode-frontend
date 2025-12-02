@@ -2,7 +2,8 @@ import PageHeader from "@/components/PageHeader";
 import { fetchPage } from "@/lib/directus";
 
 // Force dynamic rendering to prevent build-time API calls
-export const dynamic = 'force-dynamic';
+// Use ISR - revalidate every 5 minutes
+export const revalidate = 300;
 
 // Default content if CMS is unavailable
 const DEFAULT_CONTENT = {
@@ -48,3 +49,4 @@ export default async function AboutPage() {
         </main>
     );
 }
+

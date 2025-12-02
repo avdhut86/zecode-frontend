@@ -1,8 +1,8 @@
 import HeroSlider from "@/components/HeroSlider";
 import { fetchHeroSlides } from "@/lib/directus";
 
-// Force dynamic rendering to prevent build-time API calls
-export const dynamic = 'force-dynamic';
+// Use ISR - revalidate every 5 minutes for fresh content without cold starts
+export const revalidate = 300;
 
 export default async function Home() {
   // Fetch data from Directus (with error handling)

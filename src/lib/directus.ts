@@ -1,7 +1,11 @@
 // src/lib/directus.ts
 import axios from "axios";
+import { unstable_cache } from "next/cache";
 
 const DIRECTUS = process.env.NEXT_PUBLIC_DIRECTUS_URL || "http://127.0.0.1:8055";
+
+// Cache duration in seconds (5 minutes)
+const CACHE_REVALIDATE = 300;
 
 // Helper to get the correct URL - uses proxy on client-side to avoid CORS
 function getApiUrl(path: string): string {
@@ -131,9 +135,9 @@ export function fileUrl(file: any) {
 }
 
 /**
- * fetchHeroSlides - fetch all hero slider images and content
+ * fetchHeroSlides - fetch all hero slider images and content (cached)
  */
-export async function fetchHeroSlides(): Promise<HeroSlide[] | null> {
+async function _fetchHeroSlides(): Promise<HeroSlide[] | null> {
   try {
     const url = getApiUrl("/items/hero_slides");
     const res = await axios.get(url, {
@@ -146,6 +150,11 @@ export async function fetchHeroSlides(): Promise<HeroSlide[] | null> {
     return null;
   }
 }
+
+// Cached version of fetchHeroSlides
+export const fetchHeroSlides = typeof window === 'undefined' 
+  ? unstable_cache(_fetchHeroSlides, ['hero-slides'], { revalidate: CACHE_REVALIDATE })
+  : _fetchHeroSlides;
 
 /**
  * fetchCategories - fetch all main categories with their subcategories
@@ -210,9 +219,9 @@ export type Store = {
 };
 
 /**
- * fetchStores - fetch all store locations
+ * fetchStores - fetch all store locations (cached)
  */
-export async function fetchStores(): Promise<Store[] | null> {
+async function _fetchStores(): Promise<Store[] | null> {
   try {
     const url = getApiUrl("/items/stores");
     const res = await axios.get(url, {
@@ -228,6 +237,11 @@ export async function fetchStores(): Promise<Store[] | null> {
     return null;
   }
 }
+
+// Cached version of fetchStores
+export const fetchStores = typeof window === 'undefined'
+  ? unstable_cache(_fetchStores, ['all-stores'], { revalidate: CACHE_REVALIDATE })
+  : _fetchStores;
 
 /**
  * fetchStoreById - fetch a single store by ID
@@ -277,9 +291,9 @@ export type ProductCount = {
 };
 
 /**
- * fetchProducts - fetch all products
+ * fetchProducts - fetch all products (cached)
  */
-export async function fetchProducts(): Promise<Product[] | null> {
+async function _fetchProducts(): Promise<Product[] | null> {
   try {
     const url = getApiUrl("/items/products");
     const res = await axios.get(url, {
@@ -296,10 +310,15 @@ export async function fetchProducts(): Promise<Product[] | null> {
   }
 }
 
+// Cached version of fetchProducts
+export const fetchProducts = typeof window === 'undefined'
+  ? unstable_cache(_fetchProducts, ['all-products'], { revalidate: CACHE_REVALIDATE })
+  : _fetchProducts;
+
 /**
- * fetchProductsByCategory - fetch products by category slug
+ * fetchProductsByCategory - fetch products by category slug (cached)
  */
-export async function fetchProductsByCategory(categorySlug: string): Promise<Product[] | null> {
+async function _fetchProductsByCategory(categorySlug: string): Promise<Product[] | null> {
   try {
     const url = getApiUrl("/items/products");
     const res = await axios.get(url, {
@@ -316,6 +335,15 @@ export async function fetchProductsByCategory(categorySlug: string): Promise<Pro
     return null;
   }
 }
+
+// Cached version of fetchProductsByCategory
+export const fetchProductsByCategory = typeof window === 'undefined'
+  ? (categorySlug: string) => unstable_cache(
+      () => _fetchProductsByCategory(categorySlug),
+      [`products-${categorySlug}`],
+      { revalidate: CACHE_REVALIDATE }
+    )()
+  : _fetchProductsByCategory;
 
 /**
  * fetchProductBySlug - fetch a single product by slug
