@@ -522,11 +522,8 @@ export default function VirtualTryOn({
         canvas.height = video.videoHeight || 480;
       }
 
-      // Draw video frame (mirrored for selfie view)
-      ctx.save();
-      ctx.scale(-1, 1);
-      ctx.drawImage(video, -canvas.width, 0, canvas.width, canvas.height);
-      ctx.restore();
+      // Clear canvas (transparent) - video element shows through underneath
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       // Detect pose
       if (isMediaPipeReady()) {
@@ -706,7 +703,7 @@ export default function VirtualTryOn({
             {state.status === 'ready' && state.mode !== 'webcam' && !uploadedImageRef.current && (
               <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-900/80 z-30">
                 <p className="text-white text-lg mb-4">Choose an option to try on this garment</p>
-                <p className="text-gray-500 text-xs mb-2">v3.3-debug</p>
+                <p className="text-gray-500 text-xs mb-2">v3.4</p>
                 <div className="flex gap-4">
                   <button
                     onClick={startWebcam}
