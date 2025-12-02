@@ -178,39 +178,84 @@ export function detectPoseFromVideo(
   }
 }
 
+// Store image mode landmarker separately
+let imagePoseLandmarker: PoseLandmarker | null = null;
+
 /**
  * Detect pose from a single image
+ * Uses a separate landmarker in IMAGE mode for better accuracy
  * @param imageElement - Image element to analyze
  */
 export async function detectPoseFromImage(
   imageElement: HTMLImageElement
 ): Promise<PoseDetectionResult | null> {
-  if (!poseLandmarker) {
-    // Need to reinitialize for IMAGE mode
-    const vision = await import('@mediapipe/tasks-vision');
-    const { PoseLandmarker, FilesetResolver } = vision;
+  try {
+    console.log('[VTO] Detecting pose from image...');
+    
+    // Create image-mode landmarker if not exists
+    if (!imagePoseLandmarker) {
+      const vision = await import('@mediapipe/tasks-vision');
+      const { PoseLandmarker, FilesetResolver } = vision;
 
-    const filesetResolver = await FilesetResolver.forVisionTasks(
-      'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm'
-    );
+      // Use local WASM files
+      const wasmSources = [
+        '/mediapipe/wasm',
+        'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm',
+      ];
+      
+      let filesetResolver = null;
+      for (const wasmPath of wasmSources) {
+        try {
+          filesetResolver = await FilesetResolver.forVisionTasks(wasmPath);
+          console.log('[VTO] Image WASM loaded from:', wasmPath);
+          break;
+        } catch (err) {
+          console.warn('[VTO] Image WASM failed:', wasmPath);
+        }
+      }
+      
+      if (!filesetResolver) {
+        throw new Error('Failed to load WASM for image detection');
+      }
 
-    const imagePoseLandmarker = await PoseLandmarker.createFromOptions(filesetResolver, {
-      baseOptions: {
-        modelAssetPath: 'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task',
-        delegate: 'GPU',
-      },
-      runningMode: 'IMAGE',
-      numPoses: 1,
-      minPoseDetectionConfidence: 0.5,
-    });
+      // Use local model
+      const modelSources = [
+        '/mediapipe/models/pose_landmarker_lite.task',
+        'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task',
+      ];
 
+      for (const modelPath of modelSources) {
+        try {
+          imagePoseLandmarker = await PoseLandmarker.createFromOptions(filesetResolver, {
+            baseOptions: {
+              modelAssetPath: modelPath,
+              delegate: 'CPU', // CPU is more reliable for single images
+            },
+            runningMode: 'IMAGE',
+            numPoses: 1,
+            minPoseDetectionConfidence: 0.3, // Lower threshold for better detection
+          });
+          console.log('[VTO] Image model loaded from:', modelPath);
+          break;
+        } catch (err) {
+          console.warn('[VTO] Image model failed:', modelPath);
+        }
+      }
+
+      if (!imagePoseLandmarker) {
+        throw new Error('Failed to load pose model for image detection');
+      }
+    }
+
+    // Detect pose
     const results = imagePoseLandmarker.detect(imageElement);
-    imagePoseLandmarker.close();
 
     if (!results.landmarks || results.landmarks.length === 0) {
+      console.log('[VTO] No pose detected in image');
       return null;
     }
 
+    console.log('[VTO] Pose detected in image');
     const landmarks: PoseLandmark[] = results.landmarks[0].map((lm: any) => ({
       x: lm.x,
       y: lm.y,
@@ -219,9 +264,10 @@ export async function detectPoseFromImage(
     }));
 
     return { landmarks };
+  } catch (error) {
+    console.error('[VTO] Image pose detection error:', error);
+    return null;
   }
-
-  return null;
 }
 
 /**

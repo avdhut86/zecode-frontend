@@ -281,74 +281,28 @@ export default function VirtualTryOn({
     canvas.width = img.width;
     canvas.height = img.height;
 
-    // Draw uploaded image
+    // Draw uploaded image first (user sees their photo)
     ctx.drawImage(img, 0, 0);
 
-    // Detect pose using IMAGE mode
+    // Detect pose using the centralized function with timeout
     try {
       console.log('[VTO] Processing uploaded image...');
-      const vision = await import('@mediapipe/tasks-vision');
-      const { PoseLandmarker, FilesetResolver } = vision;
-
-      // Use local WASM files first, with CDN fallback
-      let filesetResolver;
-      const wasmSources = [
-        '/mediapipe/wasm',
-        'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm',
-      ];
       
-      for (const wasmPath of wasmSources) {
-        try {
-          filesetResolver = await FilesetResolver.forVisionTasks(wasmPath);
-          console.log('[VTO] Image WASM loaded from:', wasmPath);
-          break;
-        } catch (err) {
-          console.warn('[VTO] Image WASM failed from:', wasmPath);
-        }
-      }
+      // Import the pose detection function
+      const { detectPoseFromImage } = await import('@/lib/virtual-try-on/pose-detection');
       
-      if (!filesetResolver) {
-        throw new Error('Failed to load WASM files');
-      }
+      // Add timeout for pose detection (15 seconds max)
+      const timeoutPromise = new Promise<null>((_, reject) => 
+        setTimeout(() => reject(new Error('Pose detection timed out')), 15000)
+      );
+      
+      const result = await Promise.race([
+        detectPoseFromImage(img),
+        timeoutPromise
+      ]);
 
-      // Use local model first, with CDN fallback
-      const modelSources = [
-        '/mediapipe/models/pose_landmarker_lite.task',
-        'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task',
-      ];
-
-      let imagePoseLandmarker;
-      for (const modelPath of modelSources) {
-        try {
-          imagePoseLandmarker = await PoseLandmarker.createFromOptions(filesetResolver, {
-            baseOptions: {
-              modelAssetPath: modelPath,
-              delegate: 'CPU', // Use CPU for reliability
-            },
-            runningMode: 'IMAGE',
-            numPoses: 1,
-          });
-          console.log('[VTO] Image model loaded from:', modelPath);
-          break;
-        } catch (err) {
-          console.warn('[VTO] Image model failed from:', modelPath);
-        }
-      }
-
-      if (!imagePoseLandmarker) {
-        throw new Error('Failed to load pose model');
-      }
-
-      const results = imagePoseLandmarker.detect(img);
-      imagePoseLandmarker.close();
-
-      if (results.landmarks && results.landmarks.length > 0) {
-        const landmarks: PoseLandmark[] = results.landmarks[0].map((lm: any) => ({
-          x: lm.x,
-          y: lm.y,
-          z: lm.z,
-          visibility: lm.visibility ?? 1,
-        }));
+      if (result && result.landmarks.length > 0) {
+        const landmarks = result.landmarks;
 
         // Re-draw image
         ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -382,10 +336,13 @@ export default function VirtualTryOn({
       }
     } catch (error) {
       console.error('[VTO] Image processing error:', error);
+      const errorMsg = error instanceof Error && error.message.includes('timeout')
+        ? 'Pose detection took too long. Please try a clearer photo.'
+        : 'Failed to process image. Please try again.';
       setState(s => ({ 
         ...s, 
         status: 'error',
-        errorMessage: 'Failed to process image. Please try again.'
+        errorMessage: errorMsg
       }));
     }
   }, [overlayConfig, showDebug, state.isOpenCVReady, state.useSimpleFallback]);
