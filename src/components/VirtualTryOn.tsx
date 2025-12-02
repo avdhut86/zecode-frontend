@@ -639,28 +639,27 @@ export default function VirtualTryOn({
 
           {/* Main canvas area */}
           <div className="relative aspect-video bg-gray-900 rounded-lg overflow-hidden">
-            {/* Canvas for rendering - always present but may be hidden */}
-            <canvas
-              ref={canvasRef}
-              className={`absolute inset-0 w-full h-full object-contain ${
-                state.mode === 'webcam' && state.status === 'ready' 
-                  ? 'block z-10' // Show canvas when pose is detected
-                  : 'hidden'
-              }`}
-            />
-
-            {/* Video element - visible when webcam active and no pose yet */}
+            {/* Video element - ALWAYS visible when in webcam mode */}
             <video
               ref={videoRef}
               className={`absolute inset-0 w-full h-full object-contain ${
-                state.mode === 'webcam' && state.status !== 'ready' 
-                  ? 'block z-20' // Show video on top while detecting
-                  : 'hidden'
+                state.mode === 'webcam' ? 'block' : 'hidden'
               }`}
               playsInline
               muted
               autoPlay
               style={{ transform: 'scaleX(-1)' }} // Mirror for selfie view
+            />
+
+            {/* Canvas for rendering overlay - on top of video when pose detected */}
+            <canvas
+              ref={canvasRef}
+              className={`absolute inset-0 w-full h-full object-contain ${
+                (state.mode === 'webcam' && state.status === 'ready') || state.mode === 'upload'
+                  ? 'block' 
+                  : 'hidden'
+              }`}
+              style={{ pointerEvents: 'none' }} // Allow clicks to pass through
             />
 
             {/* Loading overlay - ONLY show when NOT in webcam mode */}
@@ -707,7 +706,7 @@ export default function VirtualTryOn({
             {state.status === 'ready' && state.mode !== 'webcam' && !uploadedImageRef.current && (
               <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-900/80 z-30">
                 <p className="text-white text-lg mb-4">Choose an option to try on this garment</p>
-                <p className="text-gray-500 text-xs mb-2">v3.1</p>
+                <p className="text-gray-500 text-xs mb-2">v3.2</p>
                 <div className="flex gap-4">
                   <button
                     onClick={startWebcam}
