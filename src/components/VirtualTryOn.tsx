@@ -259,117 +259,73 @@ export default function VirtualTryOn({
     return { supported: true };
   }, []);
 
-  // Start webcam with comprehensive error handling
+  // Simple, reliable webcam start
   const startWebcam = useCallback(async () => {
-    if (!videoRef.current) return;
-
-    setState(s => ({ ...s, mode: 'webcam', status: 'loading' }));
-    console.log('[VTO] Starting webcam...');
-
-    // First check camera support
-    const cameraCheck = await checkCameraSupport();
-    if (!cameraCheck.supported) {
-      console.error('[VTO] Camera check failed:', cameraCheck.error);
-      setState(s => ({ 
-        ...s, 
-        status: 'error', 
-        errorMessage: cameraCheck.error + (cameraCheck.hint ? `\n\n💡 ${cameraCheck.hint}` : '')
-      }));
+    const video = videoRef.current;
+    if (!video) {
+      console.error('[VTO] No video element');
       return;
     }
 
+    setState(s => ({ ...s, mode: 'webcam', status: 'loading', errorMessage: null }));
+    console.log('[VTO] Starting webcam...');
+
     try {
-      console.log('[VTO] Requesting camera access...');
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: {
-          width: { ideal: 640 },
-          height: { ideal: 480 },
-          facingMode: 'user',
-        },
+      // Simple camera request - works on all modern browsers
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        video: true,
+        audio: false 
       });
 
-      console.log('[VTO] Camera stream obtained');
+      console.log('[VTO] Got camera stream');
       streamRef.current = stream;
-      videoRef.current.srcObject = stream;
+      video.srcObject = stream;
       
-      // Wait for video to be ready
-      await new Promise<void>((resolve, reject) => {
-        const video = videoRef.current!;
-        const timeout = setTimeout(() => reject(new Error('Video load timeout')), 10000);
-        
-        video.onloadedmetadata = () => {
-          clearTimeout(timeout);
-          console.log('[VTO] Video metadata loaded:', video.videoWidth, 'x', video.videoHeight);
-          resolve();
-        };
-        video.onerror = () => {
-          clearTimeout(timeout);
-          reject(new Error('Video element error'));
-        };
-      });
-      
-      await videoRef.current.play();
-      console.log('[VTO] Webcam started successfully');
-
-      // Reset tracking
-      webcamPoseDetectedRef.current = false;
-      webcamStartTimeRef.current = Date.now();
-      
-      setState(s => ({ ...s, mode: 'webcam', status: 'detecting' }));
-      startProcessingLoop();
-      
-      // Set timeout to show error if no pose detected within 15 seconds
-      setTimeout(() => {
-        if (!webcamPoseDetectedRef.current && state.mode === 'webcam') {
-          console.warn('[VTO] No pose detected after 15 seconds');
-          setState(s => {
-            if (s.mode === 'webcam' && s.status === 'detecting') {
-              return {
-                ...s,
-                status: 'error',
-                errorMessage: 'Could not detect pose from camera\n\n💡 Make sure you are visible in the frame with good lighting. Stand back so your upper body is fully visible.'
-              };
-            }
-            return s;
+      // Simple play with error handling
+      video.onloadedmetadata = () => {
+        console.log('[VTO] Video ready:', video.videoWidth, 'x', video.videoHeight);
+        video.play()
+          .then(() => {
+            console.log('[VTO] Video playing');
+            webcamPoseDetectedRef.current = false;
+            webcamStartTimeRef.current = Date.now();
+            setState(s => ({ ...s, status: 'detecting' }));
+            startProcessingLoop();
+          })
+          .catch(err => {
+            console.error('[VTO] Play failed:', err);
+            setState(s => ({ 
+              ...s, 
+              status: 'error', 
+              errorMessage: 'Could not start video playback. Please try again.'
+            }));
           });
-        }
-      }, 15000);
-    } catch (error: any) {
-      console.error('[VTO] Webcam error:', error);
+      };
+
+    } catch (err: any) {
+      console.error('[VTO] Camera error:', err.name, err.message);
       
-      // Parse specific error types for better messages
-      let errorMessage = 'Could not access camera';
+      let message = 'Could not access camera';
       let hint = '';
       
-      if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
-        errorMessage = 'Camera permission denied';
-        hint = 'Click "Allow" when prompted, or check browser settings: click the lock icon in the address bar → Camera → Allow';
-      } else if (error.name === 'NotFoundError' || error.name === 'DevicesNotFoundError') {
-        errorMessage = 'No camera found';
-        hint = 'Please connect a camera or use the photo upload option instead.';
-      } else if (error.name === 'NotReadableError' || error.name === 'TrackStartError') {
-        errorMessage = 'Camera is in use';
-        hint = 'Another app may be using your camera. Close other video apps (Zoom, Teams, etc.) and try again.';
-      } else if (error.name === 'OverconstrainedError') {
-        errorMessage = 'Camera settings not supported';
-        hint = 'Your camera may not support the required resolution. Try using a different camera.';
-      } else if (error.name === 'AbortError') {
-        errorMessage = 'Camera access was interrupted';
-        hint = 'Please try again. If the problem persists, refresh the page.';
-      } else if (error.message?.includes('timeout')) {
-        errorMessage = 'Camera took too long to start';
-        hint = 'Please try again. If the issue persists, try closing other browser tabs or restarting your browser.';
-      } else {
-        hint = 'Please try again or use the photo upload option instead.';
+      if (err.name === 'NotAllowedError') {
+        message = 'Camera access denied';
+        hint = 'Please allow camera access in your browser settings';
+      } else if (err.name === 'NotFoundError') {
+        message = 'No camera found';
+        hint = 'Please connect a camera or use photo upload';
+      } else if (err.name === 'NotReadableError') {
+        message = 'Camera is busy';
+        hint = 'Close other apps using the camera and try again';
       }
-
+      
       setState(s => ({ 
         ...s, 
         status: 'error', 
-        errorMessage: errorMessage + (hint ? `\n\n💡 ${hint}` : '')
+        errorMessage: message + (hint ? `\n\n💡 ${hint}` : '')
       }));
     }
-  }, [checkCameraSupport]);
+  }, []);
 
   // Stop webcam
   const stopWebcam = useCallback(() => {
@@ -382,26 +338,38 @@ export default function VirtualTryOn({
     }
   }, []);
 
-  // Handle image upload
-  const handleImageUpload = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
+  // Simple image upload handler
+  const handleImageUpload = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    stopWebcam();
+    console.log('[VTO] File selected:', file.name, file.type, file.size);
     
-    // Show loading state immediately
-    setState(s => ({ ...s, mode: 'upload', status: 'loading' }));
-    
-    // Pre-initialize MediaPipe in background for faster image detection
-    initializeMediaPipe().catch(err => console.warn('[VTO] MediaPipe pre-init failed:', err));
+    // Validate file
+    if (!file.type.startsWith('image/')) {
+      setState(s => ({ 
+        ...s, 
+        status: 'error', 
+        errorMessage: 'Please select an image file (JPG, PNG, etc.)'
+      }));
+      return;
+    }
 
+    stopWebcam();
+    setState(s => ({ ...s, mode: 'upload', status: 'loading', errorMessage: null }));
+
+    // Simple FileReader approach
     const reader = new FileReader();
+    
     reader.onload = (e) => {
+      console.log('[VTO] File read complete');
       const img = new Image();
+      
       img.onload = () => {
+        console.log('[VTO] Image loaded:', img.width, 'x', img.height);
         uploadedImageRef.current = img;
         
-        // Draw the image immediately so user sees it while processing
+        // Draw image to canvas immediately
         const canvas = canvasRef.current;
         if (canvas) {
           const ctx = canvas.getContext('2d');
@@ -409,20 +377,36 @@ export default function VirtualTryOn({
             canvas.width = img.width;
             canvas.height = img.height;
             ctx.drawImage(img, 0, 0);
+            console.log('[VTO] Image drawn to canvas');
           }
         }
         
+        // Now process for pose detection
         setState(s => ({ ...s, status: 'detecting' }));
         processUploadedImage(img);
       };
-      img.onerror = () => {
-        setState(s => ({ ...s, status: 'error', errorMessage: 'Failed to load image' }));
+      
+      img.onerror = (err) => {
+        console.error('[VTO] Image load error:', err);
+        setState(s => ({ 
+          ...s, 
+          status: 'error', 
+          errorMessage: 'Could not load image. Please try a different file.'
+        }));
       };
+      
       img.src = e.target?.result as string;
     };
-    reader.onerror = () => {
-      setState(s => ({ ...s, status: 'error', errorMessage: 'Failed to read file' }));
+    
+    reader.onerror = (err) => {
+      console.error('[VTO] File read error:', err);
+      setState(s => ({ 
+        ...s, 
+        status: 'error', 
+        errorMessage: 'Could not read file. Please try again.'
+      }));
     };
+    
     reader.readAsDataURL(file);
   }, [stopWebcam]);
 
