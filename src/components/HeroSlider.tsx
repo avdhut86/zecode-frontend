@@ -13,7 +13,7 @@ import { type HeroSlide, fileUrl } from "@/lib/directus";
 const DEFAULT_SLIDES: HeroSlide[] = [
   {
     id: 1,
-    image: "/hero/hero1.png",
+    image: "/hero/hero_group.png",
     title: "YOUR NEW FASHION CODE",
     subtitle: "Discover Urban Fashion at 50+ Stores Across India",
     cta: "FIND A STORE NEAR YOU",
@@ -60,13 +60,13 @@ interface HeroSliderProps {
 export default function HeroSlider({ slides }: HeroSliderProps) {
   // Normalize slides to handle both old format and CMS format
   const baseSlides = slides && slides.length > 0 ? slides : DEFAULT_SLIDES;
-  
+
   // Ensure Footwear slide is always included
   const footwearSlide = DEFAULT_SLIDES.find(s => s.link === '/footwear');
   const hasFootwearSlide = baseSlides.some(s => s.link === '/footwear' || (s as any).cta_link === '/footwear');
-  
+
   const slidesWithFootwear = hasFootwearSlide ? baseSlides : [...baseSlides, footwearSlide!];
-  
+
   const normalizedSlides = slidesWithFootwear.map(s => ({
     ...s,
     // Handle image: use image_url if image is null/empty
@@ -76,7 +76,7 @@ export default function HeroSlider({ slides }: HeroSliderProps) {
     // Handle link: use cta_link if link is undefined
     link: s.link || (s as any).cta_link || '/',
   }));
-  
+
   const SLIDES = normalizedSlides;
   const [current, setCurrent] = useState(0);
   const timeoutRef = useRef<number | null>(null);
@@ -116,7 +116,7 @@ export default function HeroSlider({ slides }: HeroSliderProps) {
             {/* Ensure container provides positioning for next/image fill */}
             <div className="relative w-full h-full bg-black/5">
               <Image
-                src={s.image?.startsWith('/') ? s.image : (fileUrl(s.image) || '/hero/hero1.png')}
+                src={fileUrl(s.image) || '/hero/hero1.png'}
                 alt={s.title}
                 fill
                 style={{ objectFit: "cover", objectPosition: "center" }}

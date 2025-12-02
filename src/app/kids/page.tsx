@@ -15,22 +15,26 @@ const KIDS_SUBCATEGORIES = [
   { title: "Shoes", slug: "shoes" },
 ];
 
-export default async function KidsPage() {
-  let heroSlides = null;
-  
-  try {
-    heroSlides = await fetchHeroSlides();
-  } catch (error) {
-    console.error("Failed to fetch hero slides:", error);
+// Define specific slide for Kids' category
+const KIDS_SLIDE = [
+  {
+    id: 1,
+    image: "/categories/kids.jpg",
+    title: "KIDS' COLLECTION",
+    subtitle: "Playful Styles • Comfortable Fits • Fun Designs",
+    cta: "SHOP KIDS",
+    link: "/kids",
   }
+];
 
+export default function KidsPage() {
   return (
     <div style={{ minHeight: "100%", backgroundColor: "#ffffff" }}>
-      <HeroSlider slides={heroSlides || undefined} />
-      <SubcategoryGridDynamic 
-        title="Kids" 
+      <HeroSlider slides={KIDS_SLIDE} />
+      <SubcategoryGridDynamic
+        title="Kids"
         categorySlug="kids"
-        subcategories={KIDS_SUBCATEGORIES} 
+        subcategories={KIDS_SUBCATEGORIES}
       />
     </div>
   );

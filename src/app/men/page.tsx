@@ -15,22 +15,26 @@ const MEN_SUBCATEGORIES = [
   { title: "Shoes", slug: "shoes" },
 ];
 
-export default async function MenPage() {
-  let heroSlides = null;
-  
-  try {
-    heroSlides = await fetchHeroSlides();
-  } catch (error) {
-    console.error("Failed to fetch hero slides:", error);
+// Define specific slide for Men's category
+const MEN_SLIDE = [
+  {
+    id: 1,
+    image: "/categories/men.jpg",
+    title: "MEN'S COLLECTION",
+    subtitle: "Bold Streetwear • Casual Essentials • Urban Edge",
+    cta: "SHOP MEN",
+    link: "/men",
   }
+];
 
+export default function MenPage() {
   return (
     <div style={{ minHeight: "100%", backgroundColor: "#ffffff" }}>
-      <HeroSlider slides={heroSlides || undefined} />
-      <SubcategoryGridDynamic 
-        title="Men" 
+      <HeroSlider slides={MEN_SLIDE} />
+      <SubcategoryGridDynamic
+        title="Men"
         categorySlug="men"
-        subcategories={MEN_SUBCATEGORIES} 
+        subcategories={MEN_SUBCATEGORIES}
       />
     </div>
   );

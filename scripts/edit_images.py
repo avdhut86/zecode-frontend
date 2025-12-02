@@ -6,31 +6,29 @@ Uses the 'nana banana pro' theme (Gemini 3 Pro Image Preview).
 
 import os
 import time
-import base64
+import ssl
+import certifi
 from pathlib import Path
-from dotenv import load_dotenv
+
+# Workaround for SSL certificate issues
+os.environ['SSL_CERT_FILE'] = certifi.where()
+os.environ['REQUESTS_CA_BUNDLE'] = certifi.where()
+
+# Set API key directly
+API_KEY = "AIzaSyApyaOrIn22d0KCwrwp08-BqWUhrGIhakY"
+
+# Initialize Gemini Client
 from google import genai
 from google.genai import types
 
-# Load environment variables
-load_dotenv()
-
-# Configure API Key
-API_KEY = os.getenv("IMAGE_API_KEY") or os.getenv("GOOGLE_API_KEY")
-if not API_KEY:
-    print("Error: IMAGE_API_KEY or GOOGLE_API_KEY not found in .env or environment.")
-    exit(1)
-
-# Initialize Gemini Client
 client = genai.Client(api_key=API_KEY)
 MODEL_NAME = "gemini-3-pro-image-preview"
 
 # Configuration
-PROJECT_ROOT = Path(__file__).parents[1] # zecode-frontend
+PROJECT_ROOT = Path(__file__).parents[1]  # zecode-frontend
 PUBLIC_DIR = PROJECT_ROOT / "public"
 
 # Mapping of Target File -> Source Reference Image(s)
-# For the slider/banners, we want to generate new compositions based on these references.
 IMAGE_TASKS = [
     {
         "target": "hero/hero1.png",
@@ -92,7 +90,7 @@ IMAGE_TASKS = [
     },
     {
         "target": "categories/footwear.jpg",
-        "sources": [], # No specific reference for footwear yet, relying on prompt
+        "sources": [],
         "prompt": (
             "Create a wide category banner image for Footwear. "
             "A creative composition of stylish sneakers and shoes in a dynamic arrangement. "
@@ -170,16 +168,21 @@ def generate_image(task):
         return False
 
 def main():
-    print("Starting Image Generation Workflow...")
+    print("=" * 70)
+    print("HOME PAGE SLIDER & CATEGORY BANNER GENERATOR")
+    print("Using Gemini 3 Pro Image Preview (Nano Banana Pro)")
+    print("=" * 70)
     print(f"Target Directory: {PUBLIC_DIR}")
     
     success_count = 0
     for task in IMAGE_TASKS:
         if generate_image(task):
             success_count += 1
-        time.sleep(5) # Pause between requests to avoid rate limits
+        time.sleep(5)  # Pause between requests to avoid rate limits
 
-    print(f"\nWorkflow Complete. Generated {success_count}/{len(IMAGE_TASKS)} images.")
+    print("\n" + "=" * 70)
+    print(f"Workflow Complete. Generated {success_count}/{len(IMAGE_TASKS)} images.")
+    print("=" * 70)
 
 if __name__ == "__main__":
     main()

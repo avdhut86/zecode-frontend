@@ -11,22 +11,26 @@ const FOOTWEAR_SUBCATEGORIES = [
   { title: "Women's Footwear", slug: "women" },
 ];
 
-export default async function FootwearPage() {
-  let heroSlides = null;
-  
-  try {
-    heroSlides = await fetchHeroSlides();
-  } catch (error) {
-    console.error("Failed to fetch hero slides:", error);
+// Define specific slide for Footwear category
+const FOOTWEAR_SLIDE = [
+  {
+    id: 1,
+    image: "/categories/footwear.jpg",
+    title: "FOOTWEAR COLLECTION",
+    subtitle: "Step Up Your Game • Premium Sneakers • Comfort First",
+    cta: "SHOP FOOTWEAR",
+    link: "/footwear",
   }
+];
 
+export default function FootwearPage() {
   return (
     <div style={{ minHeight: "100%", backgroundColor: "#ffffff" }}>
-      <HeroSlider slides={heroSlides || undefined} />
-      <SubcategoryGridDynamic 
-        title="Footwear" 
+      <HeroSlider slides={FOOTWEAR_SLIDE} />
+      <SubcategoryGridDynamic
+        title="Footwear"
         categorySlug="footwear"
-        subcategories={FOOTWEAR_SUBCATEGORIES} 
+        subcategories={FOOTWEAR_SUBCATEGORIES}
       />
     </div>
   );
