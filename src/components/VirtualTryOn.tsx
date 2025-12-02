@@ -229,7 +229,7 @@ export default function VirtualTryOn({
   }, []);
 
   // Handle image upload
-  const handleImageUpload = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
@@ -237,6 +237,9 @@ export default function VirtualTryOn({
     
     // Show loading state immediately
     setState(s => ({ ...s, mode: 'upload', status: 'loading' }));
+    
+    // Pre-initialize MediaPipe in background for faster image detection
+    initializeMediaPipe().catch(err => console.warn('[VTO] MediaPipe pre-init failed:', err));
 
     const reader = new FileReader();
     reader.onload = (e) => {
