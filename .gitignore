@@ -49,7 +49,6 @@ next-env.d.ts
 /public/products/
 /public/categories/
 /public/hero/
-/public/brand/
 /public/placeholders/
 
 # Resource files (reference only)
