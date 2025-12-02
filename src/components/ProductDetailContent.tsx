@@ -3,7 +3,15 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
 import Breadcrumb from './Breadcrumb';
+import { detectGarmentType, isGarmentTypeSupported } from '@/types/virtual-try-on';
+
+// Dynamically import VirtualTryOn to avoid SSR issues with MediaPipe
+const VirtualTryOn = dynamic(() => import('./VirtualTryOn'), {
+    ssr: false,
+    loading: () => null,
+});
 
 interface ProductDetail {
     id: number;
@@ -83,6 +91,13 @@ const EmailIcon = () => (
     </svg>
 );
 
+const TryOnIcon = () => (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+    </svg>
+);
+
 export default function ProductDetailContent({ product }: { product: ProductDetail }) {
     const gallery = useMemo(() => (product.gallery && product.gallery.length > 0 ? product.gallery : [product.image]), [product.gallery, product.image]);
     const [selectedImageIndex, setSelectedImageIndex] = useState(0);
@@ -94,6 +109,11 @@ export default function ProductDetailContent({ product }: { product: ProductDeta
     const [reviewerEmail, setReviewerEmail] = useState('');
     const [reviewMessage, setReviewMessage] = useState('');
     const [submitMessage, setSubmitMessage] = useState('');
+    const [showVirtualTryOn, setShowVirtualTryOn] = useState(false);
+
+    // Check if virtual try-on is supported for this product
+    const garmentType = detectGarmentType(product.name, product.category);
+    const vtoSupported = isGarmentTypeSupported(garmentType);
 
     useEffect(() => {
         if (typeof window !== 'undefined') {
@@ -221,6 +241,23 @@ export default function ProductDetailContent({ product }: { product: ProductDeta
                         <p className="text-sm leading-relaxed text-gray-700">
                             {product.description}
                         </p>
+
+                        {/* Virtual Try-On Button */}
+                        <div className="pt-2">
+                            <button
+                                onClick={() => setShowVirtualTryOn(true)}
+                                className="flex items-center justify-center gap-2 w-full py-3 px-4 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-medium rounded-lg transition-all shadow-md hover:shadow-lg"
+                            >
+                                <TryOnIcon />
+                                Virtual Try-On
+                                {!vtoSupported && (
+                                    <span className="text-xs opacity-75">(Beta)</span>
+                                )}
+                            </button>
+                            <p className="text-xs text-gray-500 text-center mt-2">
+                                See how it looks on you using your camera or photo
+                            </p>
+                        </div>
 
                         {/* Share Section */}
                         <div className="flex items-center gap-3 pt-4">
@@ -382,6 +419,15 @@ export default function ProductDetailContent({ product }: { product: ProductDeta
                     </div>
                 </div>
             </div>
+
+            {/* Virtual Try-On Modal */}
+            <VirtualTryOn
+                productImage={selectedImage}
+                productName={product.name}
+                productCategory={product.category}
+                isOpen={showVirtualTryOn}
+                onClose={() => setShowVirtualTryOn(false)}
+            />
         </main>
     );
 }
