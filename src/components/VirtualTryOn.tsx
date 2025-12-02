@@ -83,6 +83,9 @@ export default function VirtualTryOn({
   isOpen,
   onClose,
 }: VirtualTryOnProps) {
+  // Version logging - check console to verify which version is deployed
+  console.log('[VTO] Component loaded - v4.1.2 (Dec 2, 2025)');
+  
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const uploadedImageRef = useRef<HTMLImageElement | null>(null);
@@ -724,7 +727,7 @@ export default function VirtualTryOn({
             {state.status === 'ready' && state.mode !== 'webcam' && !uploadedImageRef.current && (
               <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-900/80 z-30">
                 <p className="text-white text-lg mb-4">Choose an option to try on this garment</p>
-                <p className="text-gray-500 text-xs mb-2">v4.1.1</p>
+                <p className="text-gray-400 text-xs mb-2">VTO v4.1.2 - Dec 2</p>
                 <div className="flex gap-4">
                   <button
                     onClick={startWebcam}
