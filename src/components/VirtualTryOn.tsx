@@ -642,24 +642,24 @@ export default function VirtualTryOn({
             {/* Video element - ALWAYS visible when in webcam mode */}
             <video
               ref={videoRef}
-              className={`absolute inset-0 w-full h-full object-contain ${
+              className={`absolute inset-0 w-full h-full object-contain border-4 border-red-500 ${
                 state.mode === 'webcam' ? 'block' : 'hidden'
               }`}
               playsInline
               muted
               autoPlay
-              style={{ transform: 'scaleX(-1)' }} // Mirror for selfie view
+              style={{ transform: 'scaleX(-1)', background: 'blue' }} // Mirror + blue bg to see if element exists
             />
 
             {/* Canvas for rendering overlay - on top of video when pose detected */}
             <canvas
               ref={canvasRef}
-              className={`absolute inset-0 w-full h-full object-contain ${
+              className={`absolute inset-0 w-full h-full object-contain border-4 border-green-500 ${
                 (state.mode === 'webcam' && state.status === 'ready') || state.mode === 'upload'
                   ? 'block' 
                   : 'hidden'
               }`}
-              style={{ pointerEvents: 'none' }} // Allow clicks to pass through
+              style={{ pointerEvents: 'none', background: 'transparent' }} // Transparent so video shows through
             />
 
             {/* Loading overlay - ONLY show when NOT in webcam mode */}
@@ -706,7 +706,7 @@ export default function VirtualTryOn({
             {state.status === 'ready' && state.mode !== 'webcam' && !uploadedImageRef.current && (
               <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-900/80 z-30">
                 <p className="text-white text-lg mb-4">Choose an option to try on this garment</p>
-                <p className="text-gray-500 text-xs mb-2">v3.2</p>
+                <p className="text-gray-500 text-xs mb-2">v3.3-debug</p>
                 <div className="flex gap-4">
                   <button
                     onClick={startWebcam}
