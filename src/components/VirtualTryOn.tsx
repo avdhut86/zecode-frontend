@@ -639,28 +639,28 @@ export default function VirtualTryOn({
 
           {/* Main canvas area */}
           <div className="relative aspect-video bg-gray-900 rounded-lg overflow-hidden">
-            {/* Video element - visible ONLY when webcam mode and pose not yet detected */}
+            {/* Canvas for rendering - always present but may be hidden */}
+            <canvas
+              ref={canvasRef}
+              className={`absolute inset-0 w-full h-full object-contain ${
+                state.mode === 'webcam' && state.status === 'ready' 
+                  ? 'block z-10' // Show canvas when pose is detected
+                  : 'hidden'
+              }`}
+            />
+
+            {/* Video element - visible when webcam active and no pose yet */}
             <video
               ref={videoRef}
-              className={`w-full h-full object-contain ${
+              className={`absolute inset-0 w-full h-full object-contain ${
                 state.mode === 'webcam' && state.status !== 'ready' 
-                  ? 'block' // Show video directly when camera is starting
+                  ? 'block z-20' // Show video on top while detecting
                   : 'hidden'
               }`}
               playsInline
               muted
               autoPlay
               style={{ transform: 'scaleX(-1)' }} // Mirror for selfie view
-            />
-
-            {/* Canvas for rendering - shows when pose detected or upload mode */}
-            <canvas
-              ref={canvasRef}
-              className={`w-full h-full object-contain ${
-                state.mode === 'webcam' && state.status !== 'ready' 
-                  ? 'hidden' // Hide canvas until pose is detected
-                  : ''
-              }`}
             />
 
             {/* Loading overlay - ONLY show when NOT in webcam mode */}
@@ -689,20 +689,25 @@ export default function VirtualTryOn({
             )}
             
             {/* Webcam status indicator - shows at bottom without blocking view */}
-            {state.mode === 'webcam' && state.status === 'detecting' && (
-              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 px-4 py-2 bg-black/70 rounded-full backdrop-blur-sm">
+            {state.mode === 'webcam' && (state.status === 'detecting' || state.status === 'loading') && (
+              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 px-4 py-2 bg-black/70 rounded-full backdrop-blur-sm z-30">
                 <p className="text-white text-sm flex items-center gap-2">
                   <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-                  Camera active - Position yourself in frame
+                  {state.status === 'loading' ? 'Starting camera...' : 'Camera active - Position yourself in frame'}
                 </p>
               </div>
             )}
+            
+            {/* Debug: Show current state */}
+            <div className="absolute top-2 left-2 px-2 py-1 bg-black/80 rounded text-xs text-white z-40">
+              Mode: {state.mode} | Status: {state.status}
+            </div>
 
             {/* Ready state - waiting for user action */}
             {state.status === 'ready' && state.mode !== 'webcam' && !uploadedImageRef.current && (
-              <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-900/80">
+              <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-900/80 z-30">
                 <p className="text-white text-lg mb-4">Choose an option to try on this garment</p>
-                <p className="text-gray-500 text-xs mb-2">v3.0</p>
+                <p className="text-gray-500 text-xs mb-2">v3.1</p>
                 <div className="flex gap-4">
                   <button
                     onClick={startWebcam}
