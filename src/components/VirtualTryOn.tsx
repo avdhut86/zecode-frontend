@@ -234,16 +234,25 @@ export default function VirtualTryOn({
     if (!file) return;
 
     stopWebcam();
+    
+    // Show loading state immediately
+    setState(s => ({ ...s, mode: 'upload', status: 'loading' }));
 
     const reader = new FileReader();
     reader.onload = (e) => {
       const img = new Image();
       img.onload = () => {
         uploadedImageRef.current = img;
-        setState(s => ({ ...s, mode: 'upload', status: 'detecting' }));
+        setState(s => ({ ...s, status: 'detecting' }));
         processUploadedImage(img);
       };
+      img.onerror = () => {
+        setState(s => ({ ...s, status: 'error', errorMessage: 'Failed to load image' }));
+      };
       img.src = e.target?.result as string;
+    };
+    reader.onerror = () => {
+      setState(s => ({ ...s, status: 'error', errorMessage: 'Failed to read file' }));
     };
     reader.readAsDataURL(file);
   }, [stopWebcam]);
@@ -263,24 +272,60 @@ export default function VirtualTryOn({
     // Draw uploaded image
     ctx.drawImage(img, 0, 0);
 
-    // Detect pose (need to use IMAGE mode)
-    // For simplicity, we'll import dynamically
+    // Detect pose using IMAGE mode
     try {
+      console.log('[VTO] Processing uploaded image...');
       const vision = await import('@mediapipe/tasks-vision');
       const { PoseLandmarker, FilesetResolver } = vision;
 
-      const filesetResolver = await FilesetResolver.forVisionTasks(
-        'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm'
-      );
+      // Use local WASM files first, with CDN fallback
+      let filesetResolver;
+      const wasmSources = [
+        '/mediapipe/wasm',
+        'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm',
+      ];
+      
+      for (const wasmPath of wasmSources) {
+        try {
+          filesetResolver = await FilesetResolver.forVisionTasks(wasmPath);
+          console.log('[VTO] Image WASM loaded from:', wasmPath);
+          break;
+        } catch (err) {
+          console.warn('[VTO] Image WASM failed from:', wasmPath);
+        }
+      }
+      
+      if (!filesetResolver) {
+        throw new Error('Failed to load WASM files');
+      }
 
-      const imagePoseLandmarker = await PoseLandmarker.createFromOptions(filesetResolver, {
-        baseOptions: {
-          modelAssetPath: 'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task',
-          delegate: 'GPU',
-        },
-        runningMode: 'IMAGE',
-        numPoses: 1,
-      });
+      // Use local model first, with CDN fallback
+      const modelSources = [
+        '/mediapipe/models/pose_landmarker_lite.task',
+        'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task',
+      ];
+
+      let imagePoseLandmarker;
+      for (const modelPath of modelSources) {
+        try {
+          imagePoseLandmarker = await PoseLandmarker.createFromOptions(filesetResolver, {
+            baseOptions: {
+              modelAssetPath: modelPath,
+              delegate: 'CPU', // Use CPU for reliability
+            },
+            runningMode: 'IMAGE',
+            numPoses: 1,
+          });
+          console.log('[VTO] Image model loaded from:', modelPath);
+          break;
+        } catch (err) {
+          console.warn('[VTO] Image model failed from:', modelPath);
+        }
+      }
+
+      if (!imagePoseLandmarker) {
+        throw new Error('Failed to load pose model');
+      }
 
       const results = imagePoseLandmarker.detect(img);
       imagePoseLandmarker.close();
@@ -328,7 +373,7 @@ export default function VirtualTryOn({
       setState(s => ({ 
         ...s, 
         status: 'error',
-        errorMessage: 'Failed to process image'
+        errorMessage: 'Failed to process image. Please try again.'
       }));
     }
   }, [overlayConfig, showDebug, state.isOpenCVReady, state.useSimpleFallback]);
@@ -487,11 +532,17 @@ export default function VirtualTryOn({
             />
 
             {/* Loading overlay */}
-            {state.status === 'loading' && (
+            {(state.status === 'loading' || state.status === 'detecting') && (
               <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-900/90">
                 <SpinnerIcon />
-                <p className="mt-4 text-white">Loading AI models...</p>
-                <p className="mt-1 text-sm text-gray-400">This may take a moment on first load</p>
+                <p className="mt-4 text-white">
+                  {state.status === 'loading' ? 'Loading AI models...' : 'Detecting pose...'}
+                </p>
+                <p className="mt-1 text-sm text-gray-400">
+                  {state.status === 'loading' 
+                    ? 'This may take a moment on first load' 
+                    : 'Processing your image'}
+                </p>
               </div>
             )}
 
