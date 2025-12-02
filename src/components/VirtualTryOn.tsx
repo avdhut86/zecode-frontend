@@ -243,6 +243,18 @@ export default function VirtualTryOn({
       const img = new Image();
       img.onload = () => {
         uploadedImageRef.current = img;
+        
+        // Draw the image immediately so user sees it while processing
+        const canvas = canvasRef.current;
+        if (canvas) {
+          const ctx = canvas.getContext('2d');
+          if (ctx) {
+            canvas.width = img.width;
+            canvas.height = img.height;
+            ctx.drawImage(img, 0, 0);
+          }
+        }
+        
         setState(s => ({ ...s, status: 'detecting' }));
         processUploadedImage(img);
       };
@@ -531,18 +543,26 @@ export default function VirtualTryOn({
               className="w-full h-full object-contain"
             />
 
-            {/* Loading overlay */}
+            {/* Loading overlay - semi-transparent to show image underneath */}
             {(state.status === 'loading' || state.status === 'detecting') && (
-              <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-900/90">
-                <SpinnerIcon />
-                <p className="mt-4 text-white">
-                  {state.status === 'loading' ? 'Loading AI models...' : 'Detecting pose...'}
-                </p>
-                <p className="mt-1 text-sm text-gray-400">
-                  {state.status === 'loading' 
-                    ? 'This may take a moment on first load' 
-                    : 'Processing your image'}
-                </p>
+              <div className={`absolute inset-0 flex flex-col items-center justify-center ${
+                state.mode === 'upload' && state.status === 'detecting' 
+                  ? 'bg-black/60' // More transparent when showing uploaded image
+                  : 'bg-gray-900/90'
+              }`}>
+                <div className="bg-black/70 px-8 py-6 rounded-xl backdrop-blur-sm">
+                  <div className="flex justify-center">
+                    <SpinnerIcon />
+                  </div>
+                  <p className="mt-4 text-white text-center font-medium">
+                    {state.status === 'loading' ? 'Loading AI models...' : 'Detecting pose...'}
+                  </p>
+                  <p className="mt-1 text-sm text-gray-300 text-center">
+                    {state.status === 'loading' 
+                      ? 'This may take a moment on first load' 
+                      : 'Analyzing your photo'}
+                  </p>
+                </div>
               </div>
             )}
 
