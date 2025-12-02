@@ -4,8 +4,23 @@ import { unstable_cache } from "next/cache";
 
 const DIRECTUS = process.env.NEXT_PUBLIC_DIRECTUS_URL || "http://127.0.0.1:8055";
 
-// Cache duration in seconds (1 minute for faster updates)
-const CACHE_REVALIDATE = 60;
+/**
+ * Cache Strategy:
+ * - Products: 5 minutes (frequently viewed, balance between freshness and speed)
+ * - Hero slides: 10 minutes (rarely changes)
+ * - Stores: 30 minutes (very stable data)
+ * - Categories: 10 minutes (rarely changes)
+ * 
+ * All caches use stale-while-revalidate pattern on Vercel
+ */
+const CACHE_PRODUCTS = 300;      // 5 minutes
+const CACHE_HERO = 600;          // 10 minutes  
+const CACHE_STORES = 1800;       // 30 minutes
+const CACHE_CATEGORIES = 600;    // 10 minutes
+
+// Request timeout - increased for Render cold starts
+const TIMEOUT_DEFAULT = 15000;   // 15 seconds
+const TIMEOUT_PRODUCTS = 30000;  // 30 seconds for products (larger payload)
 
 // Helper to get the correct URL - uses proxy on client-side to avoid CORS
 function getApiUrl(path: string): string {
@@ -142,7 +157,7 @@ async function _fetchHeroSlides(): Promise<HeroSlide[] | null> {
     const url = getApiUrl("/items/hero_slides");
     const res = await axios.get(url, {
       params: { sort: "sort" },
-      timeout: 10000,
+      timeout: TIMEOUT_DEFAULT,
     });
     return res?.data?.data ?? null;
   } catch (err: any) {
@@ -153,7 +168,7 @@ async function _fetchHeroSlides(): Promise<HeroSlide[] | null> {
 
 // Cached version of fetchHeroSlides
 export const fetchHeroSlides = typeof window === 'undefined' 
-  ? unstable_cache(_fetchHeroSlides, ['hero-slides'], { revalidate: CACHE_REVALIDATE })
+  ? unstable_cache(_fetchHeroSlides, ['hero-slides-v1'], { revalidate: CACHE_HERO, tags: ['hero'] })
   : _fetchHeroSlides;
 
 /**
@@ -229,7 +244,7 @@ async function _fetchStores(): Promise<Store[] | null> {
         sort: "sort,name",
         "filter[status][_eq]": "published"
       },
-      timeout: 10000,
+      timeout: TIMEOUT_DEFAULT,
     });
     return res?.data?.data ?? null;
   } catch (err: any) {
@@ -240,7 +255,7 @@ async function _fetchStores(): Promise<Store[] | null> {
 
 // Cached version of fetchStores
 export const fetchStores = typeof window === 'undefined'
-  ? unstable_cache(_fetchStores, ['all-stores'], { revalidate: CACHE_REVALIDATE })
+  ? unstable_cache(_fetchStores, ['stores-v1'], { revalidate: CACHE_STORES, tags: ['stores'] })
   : _fetchStores;
 
 /**
@@ -291,31 +306,49 @@ export type ProductCount = {
 };
 
 /**
- * fetchProducts - fetch all products (cached)
+ * fetchProducts - fetch all products (cached with retry)
  */
 async function _fetchProducts(): Promise<Product[] | null> {
-  try {
-    const url = getApiUrl("/items/products");
-    console.log("[Directus] Fetching products from:", url);
-    const res = await axios.get(url, {
-      params: { 
-        sort: "sort,name",
-        limit: -1,  // Get all products, not just the default 100
-      },
-      timeout: 30000, // Increased timeout for Render cold starts
-    });
-    const products = res?.data?.data ?? null;
-    console.log(`[Directus] Fetched ${products?.length || 0} products`);
-    return products;
-  } catch (err: any) {
-    console.error("Directus fetchProducts error:", err.message);
-    return null;
+  const maxRetries = 2;
+  let lastError: any = null;
+  
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      const url = getApiUrl("/items/products");
+      if (attempt > 1) {
+        console.log(`[Directus] Retrying products fetch (attempt ${attempt})...`);
+      }
+      const res = await axios.get(url, {
+        params: { 
+          sort: "sort,name",
+          limit: -1,  // Get all products
+        },
+        timeout: TIMEOUT_PRODUCTS,
+      });
+      const products = res?.data?.data ?? null;
+      if (products && products.length > 0) {
+        console.log(`[Directus] Fetched ${products.length} products`);
+        return products;
+      }
+      // Empty response, try again
+      lastError = new Error('Empty response');
+    } catch (err: any) {
+      lastError = err;
+      console.warn(`[Directus] fetchProducts attempt ${attempt} failed:`, err.message);
+      // Wait before retry (exponential backoff)
+      if (attempt < maxRetries) {
+        await new Promise(r => setTimeout(r, 1000 * attempt));
+      }
+    }
   }
+  
+  console.error("[Directus] fetchProducts failed after retries:", lastError?.message);
+  return null;
 }
 
-// Cached version of fetchProducts - use shorter cache key for cache busting
+// Cached version of fetchProducts
 export const fetchProducts = typeof window === 'undefined'
-  ? unstable_cache(_fetchProducts, ['products-v2'], { revalidate: CACHE_REVALIDATE, tags: ['products'] })
+  ? unstable_cache(_fetchProducts, ['products-v3'], { revalidate: CACHE_PRODUCTS, tags: ['products'] })
   : _fetchProducts;
 
 /**
@@ -330,7 +363,7 @@ async function _fetchProductsByCategory(categorySlug: string): Promise<Product[]
         "filter[category][_eq]": categorySlug,
         "filter[status][_eq]": "published"
       },
-      timeout: 10000,
+      timeout: TIMEOUT_DEFAULT,
     });
     return res?.data?.data ?? null;
   } catch (err: any) {
@@ -343,8 +376,8 @@ async function _fetchProductsByCategory(categorySlug: string): Promise<Product[]
 export const fetchProductsByCategory = typeof window === 'undefined'
   ? (categorySlug: string) => unstable_cache(
       () => _fetchProductsByCategory(categorySlug),
-      [`products-${categorySlug}`],
-      { revalidate: CACHE_REVALIDATE }
+      [`products-cat-${categorySlug}`],
+      { revalidate: CACHE_PRODUCTS, tags: ['products'] }
     )()
   : _fetchProductsByCategory;
 
