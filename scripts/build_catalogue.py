@@ -14,12 +14,13 @@ from datetime import datetime
 from google import genai
 from google.genai import types
 import certifi
+from config import get_google_api_key
 
 # Configure SSL
 os.environ['SSL_CERT_FILE'] = certifi.where()
 
-# API Configuration
-API_KEY = "AIzaSyAoafrMfqC0ea3ghxGjfa0CpG3UMBNrS70"
+# API Configuration - from environment
+API_KEY = get_google_api_key()
 ANALYSIS_MODEL = "gemini-2.5-flash"
 
 # Create client

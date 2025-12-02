@@ -13,9 +13,10 @@ import shutil
 from pathlib import Path
 from google import genai
 from google.genai import types
+from config import get_google_api_key
 
-# Configuration
-API_KEY = "AIzaSyAoafrMfqC0ea3ghxGjfa0CpG3UMBNrS70"
+# Configuration - from environment
+API_KEY = get_google_api_key()
 IMAGE_MODEL = "gemini-3-pro-image-preview"
 ANALYSIS_MODEL = "gemini-2.5-flash"
 

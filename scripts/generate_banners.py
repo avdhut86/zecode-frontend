@@ -9,18 +9,17 @@ import time
 import ssl
 import certifi
 from pathlib import Path
+from config import get_google_api_key
 
 # Workaround for SSL certificate issues
 os.environ['SSL_CERT_FILE'] = certifi.where()
 os.environ['REQUESTS_CA_BUNDLE'] = certifi.where()
 
-# Set API key
-API_KEY = "AIzaSyApyaOrIn22d0KCwrwp08-BqWUhrGIhakY"
-
 # Initialize Gemini Client
 from google import genai
 from google.genai import types
 
+API_KEY = get_google_api_key()
 client = genai.Client(api_key=API_KEY)
 MODEL_NAME = "imagen-3.0-fast-generate-001"  # Imagen 3 Fast for image generation
 

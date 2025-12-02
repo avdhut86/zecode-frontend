@@ -36,6 +36,9 @@ yarn-error.log*
 # Instagram token metadata (contains sensitive info)
 scripts/instagram-token.json
 
+# Generated model poses (large files)
+scripts/generated-model-poses/
+
 # vercel
 .vercel
 

@@ -2,14 +2,36 @@
  * Migrate pages and site_settings from Local to Render Directus
  */
 
+const fs = require('fs');
+const path = require('path');
+
+// Load environment variables from .env.local file
+const envPath = path.join(__dirname, '..', '.env.local');
+if (fs.existsSync(envPath)) {
+    const envContent = fs.readFileSync(envPath, 'utf8');
+    envContent.split('\n').forEach(line => {
+        const match = line.match(/^([^#=]+)=(.*)$/);
+        if (match) {
+            const key = match[1].trim();
+            const value = match[2].trim().replace(/^["']|["']$/g, '');
+            if (!process.env[key]) process.env[key] = value;
+        }
+    });
+}
+
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
 const LOCAL_URL = 'http://127.0.0.1:8055';
-const RENDER_URL = 'https://zecode-directus.onrender.com';
+const RENDER_URL = process.env.DIRECTUS_URL || process.env.NEXT_PUBLIC_DIRECTUS_URL || 'https://zecode-directus.onrender.com';
 
-// Get credentials from environment or use defaults for this one-time migration
-const ADMIN_EMAIL = process.env.DIRECTUS_ADMIN_EMAIL || 'zecode@siyaram.com';
-const ADMIN_PASSWORD = process.env.DIRECTUS_ADMIN_PASSWORD || 'SSML@$2025';
+// Get credentials from environment
+const ADMIN_EMAIL = process.env.DIRECTUS_ADMIN_EMAIL;
+const ADMIN_PASSWORD = process.env.DIRECTUS_ADMIN_PASSWORD;
+
+if (!ADMIN_EMAIL || !ADMIN_PASSWORD) {
+    console.error('❌ Missing DIRECTUS_ADMIN_EMAIL or DIRECTUS_ADMIN_PASSWORD in .env.local');
+    process.exit(1);
+}
 
 let accessToken = null;
 
