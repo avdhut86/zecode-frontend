@@ -100,6 +100,10 @@ export default function VirtualTryOn({
     fps: 0,
     useSimpleFallback: false,
   });
+  
+  // Track webcam pose detection success
+  const webcamPoseDetectedRef = useRef<boolean>(false);
+  const webcamStartTimeRef = useRef<number>(0);
 
   const [showDebug, setShowDebug] = useState(false);
   const [overlayConfig, setOverlayConfig] = useState<GarmentOverlayConfig | null>(null);
@@ -307,8 +311,29 @@ export default function VirtualTryOn({
       await videoRef.current.play();
       console.log('[VTO] Webcam started successfully');
 
+      // Reset tracking
+      webcamPoseDetectedRef.current = false;
+      webcamStartTimeRef.current = Date.now();
+      
       setState(s => ({ ...s, mode: 'webcam', status: 'detecting' }));
       startProcessingLoop();
+      
+      // Set timeout to show error if no pose detected within 15 seconds
+      setTimeout(() => {
+        if (!webcamPoseDetectedRef.current && state.mode === 'webcam') {
+          console.warn('[VTO] No pose detected after 15 seconds');
+          setState(s => {
+            if (s.mode === 'webcam' && s.status === 'detecting') {
+              return {
+                ...s,
+                status: 'error',
+                errorMessage: 'Could not detect pose from camera\n\n💡 Make sure you are visible in the frame with good lighting. Stand back so your upper body is fully visible.'
+              };
+            }
+            return s;
+          });
+        }
+      }, 15000);
     } catch (error: any) {
       console.error('[VTO] Webcam error:', error);
       
@@ -551,7 +576,19 @@ export default function VirtualTryOn({
             drawLandmarkDebug(ctx, smoothedLandmarks, canvas.width, canvas.height);
           }
 
-          setState(s => ({ ...s, currentPose: { landmarks: smoothedLandmarks } }));
+          setState(s => ({ ...s, currentPose: { landmarks: smoothedLandmarks }, status: 'ready' }));
+          
+          // Mark that we've successfully detected a pose
+          if (!webcamPoseDetectedRef.current) {
+            webcamPoseDetectedRef.current = true;
+            console.log('[VTO] First pose detected!');
+          }
+        }
+      } else {
+        // MediaPipe not ready yet - check for timeout
+        const elapsed = Date.now() - webcamStartTimeRef.current;
+        if (elapsed > 10000 && !webcamPoseDetectedRef.current) {
+          console.warn('[VTO] MediaPipe not ready after 10 seconds');
         }
       }
 
@@ -632,24 +669,34 @@ export default function VirtualTryOn({
               className="w-full h-full object-contain"
             />
 
-            {/* Loading overlay - semi-transparent to show image underneath */}
+            {/* Loading overlay - different styles for webcam vs upload */}
             {(state.status === 'loading' || state.status === 'detecting') && (
               <div className={`absolute inset-0 flex flex-col items-center justify-center ${
-                state.mode === 'upload' && state.status === 'detecting' 
-                  ? 'bg-black/60' // More transparent when showing uploaded image
-                  : 'bg-gray-900/90'
+                state.mode === 'webcam'
+                  ? 'bg-transparent' // Fully transparent for webcam - show camera feed
+                  : state.mode === 'upload' && state.status === 'detecting' 
+                    ? 'bg-black/60' // Semi-transparent when showing uploaded image
+                    : 'bg-gray-900/90' // More opaque for initial loading
               }`}>
-                <div className="bg-black/70 px-8 py-6 rounded-xl backdrop-blur-sm">
+                <div className={`px-8 py-6 rounded-xl backdrop-blur-sm ${
+                  state.mode === 'webcam' ? 'bg-black/80 absolute bottom-4' : 'bg-black/70'
+                }`}>
                   <div className="flex justify-center">
                     <SpinnerIcon />
                   </div>
                   <p className="mt-4 text-white text-center font-medium">
-                    {state.status === 'loading' ? 'Loading AI models...' : 'Detecting pose...'}
+                    {state.status === 'loading' 
+                      ? 'Loading AI models...' 
+                      : state.mode === 'webcam'
+                        ? 'Initializing pose detection...'
+                        : 'Detecting pose...'}
                   </p>
                   <p className="mt-1 text-sm text-gray-300 text-center">
                     {state.status === 'loading' 
                       ? 'This may take a moment on first load' 
-                      : 'Analyzing your photo'}
+                      : state.mode === 'webcam'
+                        ? 'Stand back so your upper body is visible'
+                        : 'Analyzing your photo'}
                   </p>
                 </div>
               </div>

@@ -76,9 +76,9 @@ async function syncDirectus() {
   );
   console.log('   Saved to directus-schema-export.json');
 
-  // Get schema diff
+  // Get schema diff (with force flag to bypass version check)
   console.log('\n3. Comparing with production...');
-  const diffRes = await fetch(PROD_URL + '/schema/diff', {
+  const diffRes = await fetch(PROD_URL + '/schema/diff?force=true', {
     method: 'POST',
     headers: {
       'Authorization': 'Bearer ' + prodToken,
@@ -110,9 +110,9 @@ async function syncDirectus() {
     console.log('     Fields: ' + fieldChanges + ' changes');
   }
 
-  // Apply schema
+  // Apply schema (with force flag to bypass version check)
   console.log('\n4. Applying schema to production...');
-  const applyRes = await fetch(PROD_URL + '/schema/apply', {
+  const applyRes = await fetch(PROD_URL + '/schema/apply?force=true', {
     method: 'POST',
     headers: {
       'Authorization': 'Bearer ' + prodToken,
