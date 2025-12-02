@@ -188,11 +188,94 @@ export default function VirtualTryOn({
     };
   }, [isOpen, productImage, productName, garmentType]);
 
-  // Start webcam
+  // Check camera availability and permissions
+  const checkCameraSupport = useCallback(async (): Promise<{ supported: boolean; error?: string; hint?: string }> => {
+    // Check if running in browser
+    if (typeof window === 'undefined') {
+      return { supported: false, error: 'Camera not available', hint: 'Please open this page in a web browser.' };
+    }
+
+    // Check for HTTPS (required for camera access on most browsers)
+    const isSecure = window.location.protocol === 'https:' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    if (!isSecure) {
+      return { 
+        supported: false, 
+        error: 'Secure connection required', 
+        hint: 'Camera access requires HTTPS. Please access this site via https:// or use localhost for testing.'
+      };
+    }
+
+    // Check if mediaDevices API is available
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      return { 
+        supported: false, 
+        error: 'Camera not supported', 
+        hint: 'Your browser doesn\'t support camera access. Try using Chrome, Firefox, Safari, or Edge.'
+      };
+    }
+
+    // Check for camera devices
+    try {
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      const videoDevices = devices.filter(d => d.kind === 'videoinput');
+      
+      if (videoDevices.length === 0) {
+        return { 
+          supported: false, 
+          error: 'No camera detected', 
+          hint: 'Please connect a camera or use the photo upload option instead.'
+        };
+      }
+      
+      console.log('[VTO] Found', videoDevices.length, 'camera(s)');
+    } catch (err) {
+      console.warn('[VTO] Could not enumerate devices:', err);
+      // Continue anyway - some browsers don't allow enumeration without permission
+    }
+
+    // Check permission status if available
+    if (navigator.permissions && navigator.permissions.query) {
+      try {
+        const permissionStatus = await navigator.permissions.query({ name: 'camera' as PermissionName });
+        console.log('[VTO] Camera permission status:', permissionStatus.state);
+        
+        if (permissionStatus.state === 'denied') {
+          return { 
+            supported: false, 
+            error: 'Camera permission denied', 
+            hint: 'You\'ve blocked camera access. To enable: click the lock icon in your browser\'s address bar → Site settings → Camera → Allow'
+          };
+        }
+      } catch (err) {
+        // Permission API not fully supported, continue
+        console.log('[VTO] Permission query not supported');
+      }
+    }
+
+    return { supported: true };
+  }, []);
+
+  // Start webcam with comprehensive error handling
   const startWebcam = useCallback(async () => {
     if (!videoRef.current) return;
 
+    setState(s => ({ ...s, mode: 'webcam', status: 'loading' }));
+    console.log('[VTO] Starting webcam...');
+
+    // First check camera support
+    const cameraCheck = await checkCameraSupport();
+    if (!cameraCheck.supported) {
+      console.error('[VTO] Camera check failed:', cameraCheck.error);
+      setState(s => ({ 
+        ...s, 
+        status: 'error', 
+        errorMessage: cameraCheck.error + (cameraCheck.hint ? `\n\n💡 ${cameraCheck.hint}` : '')
+      }));
+      return;
+    }
+
     try {
+      console.log('[VTO] Requesting camera access...');
       const stream = await navigator.mediaDevices.getUserMedia({
         video: {
           width: { ideal: 640 },
@@ -201,21 +284,67 @@ export default function VirtualTryOn({
         },
       });
 
+      console.log('[VTO] Camera stream obtained');
       streamRef.current = stream;
       videoRef.current.srcObject = stream;
+      
+      // Wait for video to be ready
+      await new Promise<void>((resolve, reject) => {
+        const video = videoRef.current!;
+        const timeout = setTimeout(() => reject(new Error('Video load timeout')), 10000);
+        
+        video.onloadedmetadata = () => {
+          clearTimeout(timeout);
+          console.log('[VTO] Video metadata loaded:', video.videoWidth, 'x', video.videoHeight);
+          resolve();
+        };
+        video.onerror = () => {
+          clearTimeout(timeout);
+          reject(new Error('Video element error'));
+        };
+      });
+      
       await videoRef.current.play();
+      console.log('[VTO] Webcam started successfully');
 
       setState(s => ({ ...s, mode: 'webcam', status: 'detecting' }));
       startProcessingLoop();
-    } catch (error) {
+    } catch (error: any) {
       console.error('[VTO] Webcam error:', error);
+      
+      // Parse specific error types for better messages
+      let errorMessage = 'Could not access camera';
+      let hint = '';
+      
+      if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
+        errorMessage = 'Camera permission denied';
+        hint = 'Click "Allow" when prompted, or check browser settings: click the lock icon in the address bar → Camera → Allow';
+      } else if (error.name === 'NotFoundError' || error.name === 'DevicesNotFoundError') {
+        errorMessage = 'No camera found';
+        hint = 'Please connect a camera or use the photo upload option instead.';
+      } else if (error.name === 'NotReadableError' || error.name === 'TrackStartError') {
+        errorMessage = 'Camera is in use';
+        hint = 'Another app may be using your camera. Close other video apps (Zoom, Teams, etc.) and try again.';
+      } else if (error.name === 'OverconstrainedError') {
+        errorMessage = 'Camera settings not supported';
+        hint = 'Your camera may not support the required resolution. Try using a different camera.';
+      } else if (error.name === 'AbortError') {
+        errorMessage = 'Camera access was interrupted';
+        hint = 'Please try again. If the problem persists, refresh the page.';
+      } else if (error.message?.includes('timeout')) {
+        errorMessage = 'Camera took too long to start';
+        hint = 'Please try again. If the issue persists, try closing other browser tabs or restarting your browser.';
+      } else {
+        hint = 'Please try again or use the photo upload option instead.';
+      }
+
       setState(s => ({ 
         ...s, 
         status: 'error', 
-        errorMessage: 'Could not access camera. Please grant permission.' 
+        errorMessage: errorMessage + (hint ? `\n\n💡 ${hint}` : '')
       }));
     }
-  }, []);
+  }, [checkCameraSupport]);
 
   // Stop webcam
   const stopWebcam = useCallback(() => {
@@ -554,14 +683,20 @@ export default function VirtualTryOn({
 
             {/* Error state */}
             {state.status === 'error' && (
-              <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-900/90">
+              <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-900/90 p-6">
                 <div className="text-red-500 mb-4">
                   <svg className="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                   </svg>
                 </div>
                 <p className="text-white text-lg mb-2">Something went wrong</p>
-                <p className="text-gray-400 text-sm mb-4">{state.errorMessage}</p>
+                <div className="text-center max-w-md mb-4">
+                  {state.errorMessage?.split('\n\n').map((part, i) => (
+                    <p key={i} className={`${i === 0 ? 'text-gray-300 text-sm' : 'text-blue-300 text-xs mt-3 bg-blue-900/30 p-3 rounded-lg'}`}>
+                      {part}
+                    </p>
+                  ))}
+                </div>
                 <button
                   onClick={() => setState(s => ({ ...s, status: 'ready', errorMessage: null }))}
                   className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
