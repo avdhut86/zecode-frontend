@@ -77,11 +77,11 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   }
 
   return (
-    <html lang="en" className="h-full">
+    <html lang="en" className="h-full" suppressHydrationWarning>
       <head>
         <meta charSet="utf-8" />
       </head>
-      <body className="antialiased" style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', margin: 0, padding: 0 }}>
+      <body className="antialiased" style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', margin: 0, padding: 0 }} suppressHydrationWarning>
         <ThemeProvider>
           <a className="sr-only focus:not-sr-only p-2 absolute z-[9999]" href="#main">
             Skip to content

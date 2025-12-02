@@ -84,6 +84,11 @@ const nextConfig: NextConfig = {
         hostname: "maps.googleapis.com",
         pathname: "/maps/api/place/photo/**",
       },
+      {
+        protocol: "https",
+        hostname: "res.cloudinary.com",
+        pathname: "/ds8llatku/**",
+      },
     ],
   },
 
