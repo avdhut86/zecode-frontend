@@ -51,7 +51,6 @@ const DEFAULT_CATEGORIES: Category[] = [
       { label: "T-SHIRTS", href: "/men/tshirts" },
       { label: "SHIRTS", href: "/men/shirts" },
       { label: "JEANS", href: "/men/jeans" },
-      { label: "TROUSERS", href: "/men/trousers" },
       { label: "JACKETS", href: "/men/jackets" },
       { label: "SHOES", href: "/men/shoes" },
     ],
@@ -76,8 +75,6 @@ const DEFAULT_CATEGORIES: Category[] = [
       { label: "GIRLS TOPS", href: "/kids/girls-tops" },
       { label: "BOYS JEANS", href: "/kids/boys-jeans" },
       { label: "GIRLS DRESSES", href: "/kids/girls-dresses" },
-      { label: "JACKETS", href: "/kids/jackets" },
-      { label: "SHOES", href: "/kids/shoes" },
     ],
   },
   {

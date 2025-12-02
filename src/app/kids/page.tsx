@@ -11,8 +11,6 @@ const KIDS_SUBCATEGORIES = [
   { title: "Girls Tops", slug: "girls-tops" },
   { title: "Boys Jeans", slug: "boys-jeans" },
   { title: "Girls Dresses", slug: "girls-dresses" },
-  { title: "Jackets", slug: "jackets" },
-  { title: "Shoes", slug: "shoes" },
 ];
 
 // Define specific slide for Kids' category

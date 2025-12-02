@@ -10,7 +10,6 @@ const MEN_SUBCATEGORIES = [
   { title: "T-Shirts", slug: "tshirts" },
   { title: "Shirts", slug: "shirts" },
   { title: "Jeans", slug: "jeans" },
-  { title: "Trousers", slug: "trousers" },
   { title: "Jackets", slug: "jackets" },
   { title: "Shoes", slug: "shoes" },
 ];
