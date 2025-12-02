@@ -137,6 +137,8 @@ export default async function FootwearSubcategoryPage({ params }: PageProps) {
     
     if (product) {
       // Map Directus product to ProductDetail interface
+      // Only show the main product image to avoid mismatched model photos
+      const mainImage = product.image || product.image_url;
       const productDetail = {
         id: product.id,
         name: product.name,
@@ -144,14 +146,8 @@ export default async function FootwearSubcategoryPage({ params }: PageProps) {
         categoryLabel: product.subcategory || 'Footwear',
         price: product.price,
         originalPrice: product.sale_price,
-        image: fileUrl(product.image || product.image_url) || '',
-        gallery: [
-          product.image || product.image_url,
-          product.model_image_1,
-          product.model_image_2,
-          product.model_image_3,
-          ...(product.images || [])
-        ].filter(Boolean).map(img => fileUrl(img) || ''),
+        image: fileUrl(mainImage) || '',
+        gallery: [mainImage].filter(Boolean).map(img => fileUrl(img) || ''),
         description: product.description || '',
         sizes: product.sizes || [],
         rating: 4.5,
