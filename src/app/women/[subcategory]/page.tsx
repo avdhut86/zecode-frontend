@@ -7,6 +7,45 @@ import { notFound } from "next/navigation";
 // Force dynamic rendering to prevent build-time API calls
 export const dynamic = 'force-dynamic';
 
+/**
+ * Extract photo session ID from image path (e.g., "__DSC4648_Large" from the filename)
+ * This helps match model images with the correct product
+ */
+function getSessionId(imagePath: string | null | undefined): string | null {
+  if (!imagePath) return null;
+  // Match patterns like __DSC1234 or _DSC1234
+  const match = imagePath.match(/_?_?(DSC\d+)/i);
+  return match ? match[1] : null;
+}
+
+/**
+ * Build gallery with only matching model images (same photo session)
+ */
+function buildMatchingGallery(product: any): string[] {
+  const mainImage = product.image || product.image_url;
+  const mainSessionId = getSessionId(mainImage);
+  
+  // Start with the main product image
+  const gallery: string[] = [mainImage].filter(Boolean);
+  
+  // Only add model images if they match the same photo session
+  const modelImages = [
+    product.model_image_1,
+    product.model_image_2,
+    product.model_image_3,
+  ].filter(Boolean);
+  
+  for (const modelImg of modelImages) {
+    const modelSessionId = getSessionId(modelImg);
+    // Only include if session IDs match
+    if (mainSessionId && modelSessionId && mainSessionId === modelSessionId) {
+      gallery.push(modelImg);
+    }
+  }
+  
+  return gallery;
+}
+
 const SUBCATEGORY_MAP: Record<string, string | string[]> = {
   'tops': ['Top', 'Tops'],
   'blouses': 'Blouse',
@@ -106,8 +145,8 @@ export default async function WomenSubcategoryPage({ params }: PageProps) {
   
   if (product) {
     // Map Directus product to ProductDetail interface
-    // Only show the main product image to avoid mismatched model photos
-    const mainImage = product.image || product.image_url;
+    // Build gallery with matching model images (same photo session)
+    const gallery = buildMatchingGallery(product);
     const productDetail = {
       id: product.id,
       name: product.name,
@@ -115,8 +154,8 @@ export default async function WomenSubcategoryPage({ params }: PageProps) {
       categoryLabel: product.subcategory || 'Women',
       price: product.price,
       originalPrice: product.sale_price,
-      image: fileUrl(mainImage) || '',
-      gallery: [mainImage].filter(Boolean).map(img => fileUrl(img) || ''),
+      image: fileUrl(gallery[0]) || '',
+      gallery: gallery.map(img => fileUrl(img) || ''),
       description: product.description || '',
       sizes: product.sizes || [],
       rating: 4.5, // Mock rating

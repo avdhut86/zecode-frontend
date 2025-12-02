@@ -7,6 +7,36 @@ import { notFound } from "next/navigation";
 // Force dynamic rendering to prevent build-time API calls
 export const dynamic = 'force-dynamic';
 
+// Helper to extract photo session ID (e.g., DSC1234) from image path
+function getSessionId(imagePath: string | null | undefined): string | null {
+  if (!imagePath) return null;
+  // Match patterns like __DSC1234 or _DSC1234 in the filename
+  const match = imagePath.match(/_?_?(DSC\d+)/i);
+  return match ? match[1] : null;
+}
+
+// Build gallery with only matching model images from the same photo session
+function buildMatchingGallery(product: any): string[] {
+  const mainImage = product.image || product.image_url;
+  const mainSessionId = getSessionId(mainImage);
+  
+  // Start with just the main product image
+  const gallery: string[] = [mainImage].filter(Boolean);
+  
+  // Only add model images that match the same photo session
+  const modelImages = [product.model_image_1, product.model_image_2, product.model_image_3].filter(Boolean);
+  
+  for (const modelImg of modelImages) {
+    const modelSessionId = getSessionId(modelImg);
+    // Only include if session IDs match
+    if (mainSessionId && modelSessionId && mainSessionId === modelSessionId) {
+      gallery.push(modelImg);
+    }
+  }
+  
+  return gallery;
+}
+
 const SUBCATEGORY_MAP: Record<string, string | string[]> = {
   'tshirts': ['T', 'T-Shirt'],
   'shirts': 'Shirt',
@@ -108,8 +138,10 @@ export default async function MenSubcategoryPage({ params }: PageProps) {
   
   if (product) {
     // Map Directus product to ProductDetail interface
-    // Only show the main product image to avoid mismatched model photos
+    // Build gallery with matching model images from the same photo session
     const mainImage = product.image || product.image_url;
+    const matchingGallery = buildMatchingGallery(product);
+    
     const productDetail = {
       id: product.id,
       name: product.name,
@@ -118,7 +150,7 @@ export default async function MenSubcategoryPage({ params }: PageProps) {
       price: product.price,
       originalPrice: product.sale_price,
       image: fileUrl(mainImage) || '',
-      gallery: [mainImage].filter(Boolean).map(img => fileUrl(img) || ''),
+      gallery: matchingGallery.map(img => fileUrl(img) || ''),
       description: product.description || '',
       sizes: product.sizes || [],
       rating: 4.5, // Mock rating
