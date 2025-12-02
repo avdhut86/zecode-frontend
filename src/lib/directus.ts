@@ -4,8 +4,8 @@ import { unstable_cache } from "next/cache";
 
 const DIRECTUS = process.env.NEXT_PUBLIC_DIRECTUS_URL || "http://127.0.0.1:8055";
 
-// Cache duration in seconds (5 minutes)
-const CACHE_REVALIDATE = 300;
+// Cache duration in seconds (1 minute for faster updates)
+const CACHE_REVALIDATE = 60;
 
 // Helper to get the correct URL - uses proxy on client-side to avoid CORS
 function getApiUrl(path: string): string {
@@ -296,23 +296,26 @@ export type ProductCount = {
 async function _fetchProducts(): Promise<Product[] | null> {
   try {
     const url = getApiUrl("/items/products");
+    console.log("[Directus] Fetching products from:", url);
     const res = await axios.get(url, {
       params: { 
         sort: "sort,name",
         limit: -1,  // Get all products, not just the default 100
       },
-      timeout: 20000,
+      timeout: 30000, // Increased timeout for Render cold starts
     });
-    return res?.data?.data ?? null;
+    const products = res?.data?.data ?? null;
+    console.log(`[Directus] Fetched ${products?.length || 0} products`);
+    return products;
   } catch (err: any) {
     console.error("Directus fetchProducts error:", err.message);
     return null;
   }
 }
 
-// Cached version of fetchProducts
+// Cached version of fetchProducts - use shorter cache key for cache busting
 export const fetchProducts = typeof window === 'undefined'
-  ? unstable_cache(_fetchProducts, ['all-products'], { revalidate: CACHE_REVALIDATE })
+  ? unstable_cache(_fetchProducts, ['products-v2'], { revalidate: CACHE_REVALIDATE, tags: ['products'] })
   : _fetchProducts;
 
 /**
