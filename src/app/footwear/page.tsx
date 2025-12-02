@@ -15,9 +15,9 @@ const FOOTWEAR_SUBCATEGORIES = [
 const FOOTWEAR_SLIDE = [
   {
     id: 1,
-    image: "/categories/footwear.jpg",
+    image: "/categories/footwear_collage.jpg",
     title: "FOOTWEAR COLLECTION",
-    subtitle: "Step Up Your Game • Premium Sneakers • Comfort First",
+    subtitle: "Step Up Your Style • Comfort Meets Fashion • Walk With Confidence",
     cta: "SHOP FOOTWEAR",
     link: "/footwear",
   }

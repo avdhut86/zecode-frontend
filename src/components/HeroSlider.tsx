@@ -45,7 +45,7 @@ const DEFAULT_SLIDES: HeroSlide[] = [
   },
   {
     id: 5,
-    image: "/categories/footwear.jpg",
+    image: "/categories/footwear_collage.jpg",
     title: "FOOTWEAR COLLECTION",
     subtitle: "Step Up Your Style • Comfort Meets Fashion • Walk With Confidence",
     cta: "SHOP FOOTWEAR",
