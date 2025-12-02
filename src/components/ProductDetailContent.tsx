@@ -186,7 +186,7 @@ export default function ProductDetailContent({ product }: { product: ProductDeta
                         </div>
 
                         {/* Thumbnail Gallery - Horizontal below main image */}
-                        <div className="flex gap-2 mt-4">
+                        <div className="flex gap-2 mt-4 items-center">
                             {gallery.slice(0, 4).map((imageSrc, index) => {
                                 const isActive = index === selectedImageIndex;
                                 return (
@@ -211,6 +211,17 @@ export default function ProductDetailContent({ product }: { product: ProductDeta
                                     </button>
                                 );
                             })}
+                            
+                            {/* Virtual Try-On Button */}
+                            <button
+                                onClick={() => setShowVirtualTryOn(true)}
+                                className="flex flex-col items-center justify-center gap-1 px-3 py-2 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-medium rounded-lg transition-all shadow-md hover:shadow-lg flex-shrink-0"
+                                style={{ height: '75px' }}
+                                title="Virtual Try-On - See how it looks on you"
+                            >
+                                <TryOnIcon />
+                                <span className="text-xs whitespace-nowrap">Try On</span>
+                            </button>
                         </div>
                     </div>
 
@@ -241,23 +252,6 @@ export default function ProductDetailContent({ product }: { product: ProductDeta
                         <p className="text-sm leading-relaxed text-gray-700">
                             {product.description}
                         </p>
-
-                        {/* Virtual Try-On Button */}
-                        <div className="pt-2">
-                            <button
-                                onClick={() => setShowVirtualTryOn(true)}
-                                className="flex items-center justify-center gap-2 w-full py-3 px-4 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-medium rounded-lg transition-all shadow-md hover:shadow-lg"
-                            >
-                                <TryOnIcon />
-                                Virtual Try-On
-                                {!vtoSupported && (
-                                    <span className="text-xs opacity-75">(Beta)</span>
-                                )}
-                            </button>
-                            <p className="text-xs text-gray-500 text-center mt-2">
-                                See how it looks on you using your camera or photo
-                            </p>
-                        </div>
 
                         {/* Share Section */}
                         <div className="flex items-center gap-3 pt-4">
