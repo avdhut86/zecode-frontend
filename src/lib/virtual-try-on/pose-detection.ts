@@ -17,7 +17,7 @@ let mediaPipeLoaded = false;
 
 /**
  * Initialize MediaPipe Pose Landmarker
- * Loads the WASM files and model from CDN
+ * Loads the WASM files and model from local public folder or CDN
  */
 export async function initializeMediaPipe(): Promise<boolean> {
   if (mediaPipeLoaded && poseLandmarker) {
@@ -25,34 +25,102 @@ export async function initializeMediaPipe(): Promise<boolean> {
   }
 
   try {
+    console.log('[VTO] Loading MediaPipe tasks-vision...');
+    
     // Dynamically import MediaPipe tasks-vision
     const vision = await import('@mediapipe/tasks-vision');
     const { PoseLandmarker, FilesetResolver } = vision;
 
-    // Load WASM files
-    const filesetResolver = await FilesetResolver.forVisionTasks(
-      'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm'
-    );
+    console.log('[VTO] Loading WASM files...');
+    
+    // Try local WASM files first (copied to public/mediapipe/wasm), then CDN fallbacks
+    const wasmSources = [
+      '/mediapipe/wasm',  // Local - fastest and most reliable
+      'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm',
+      'https://unpkg.com/@mediapipe/tasks-vision@0.10.14/wasm',
+    ];
+    
+    let filesetResolver = null;
+    let lastError: any = null;
+    
+    for (const wasmPath of wasmSources) {
+      try {
+        console.log(`[VTO] Trying WASM from: ${wasmPath}`);
+        filesetResolver = await FilesetResolver.forVisionTasks(wasmPath);
+        console.log(`[VTO] WASM loaded successfully from: ${wasmPath}`);
+        break;
+      } catch (err) {
+        console.warn(`[VTO] Failed to load WASM from ${wasmPath}:`, err instanceof Error ? err.message : 'Unknown error');
+        lastError = err;
+      }
+    }
+    
+    if (!filesetResolver) {
+      throw lastError || new Error('All WASM sources failed');
+    }
 
-    // Create pose landmarker with optimized settings for VTO
-    poseLandmarker = await PoseLandmarker.createFromOptions(filesetResolver, {
-      baseOptions: {
-        modelAssetPath: 'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task',
-        delegate: 'GPU', // Use GPU for better performance
-      },
-      runningMode: 'VIDEO',
-      numPoses: 1, // Single person for VTO
-      minPoseDetectionConfidence: 0.5,
-      minPosePresenceConfidence: 0.5,
-      minTrackingConfidence: 0.5,
-      outputSegmentationMasks: false, // Disable for performance
-    });
+    console.log('[VTO] Creating PoseLandmarker...');
+    
+    // Use local model first, then CDN fallback
+    const modelPath = '/mediapipe/models/pose_landmarker_lite.task';
+    const modelPathFallback = 'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task';
+    
+    // Try GPU first, fallback to CPU
+    const createPoseLandmarker = async (modelUrl: string, delegate: 'GPU' | 'CPU') => {
+      return await PoseLandmarker.createFromOptions(filesetResolver, {
+        baseOptions: {
+          modelAssetPath: modelUrl,
+          delegate,
+        },
+        runningMode: 'VIDEO',
+        numPoses: 1,
+        minPoseDetectionConfidence: 0.5,
+        minPosePresenceConfidence: 0.5,
+        minTrackingConfidence: 0.5,
+        outputSegmentationMasks: false,
+      });
+    };
+    
+    // Try local model with GPU
+    try {
+      console.log('[VTO] Trying local model with GPU...');
+      poseLandmarker = await createPoseLandmarker(modelPath, 'GPU');
+      console.log('[VTO] MediaPipe initialized with local model + GPU');
+    } catch (localGpuError) {
+      console.warn('[VTO] Local GPU failed:', localGpuError instanceof Error ? localGpuError.message : 'Unknown');
+      
+      // Try local model with CPU
+      try {
+        console.log('[VTO] Trying local model with CPU...');
+        poseLandmarker = await createPoseLandmarker(modelPath, 'CPU');
+        console.log('[VTO] MediaPipe initialized with local model + CPU');
+      } catch (localCpuError) {
+        console.warn('[VTO] Local CPU failed:', localCpuError instanceof Error ? localCpuError.message : 'Unknown');
+        
+        // Try CDN model with GPU
+        try {
+          console.log('[VTO] Trying CDN model with GPU...');
+          poseLandmarker = await createPoseLandmarker(modelPathFallback, 'GPU');
+          console.log('[VTO] MediaPipe initialized with CDN model + GPU');
+        } catch (cdnGpuError) {
+          console.warn('[VTO] CDN GPU failed:', cdnGpuError instanceof Error ? cdnGpuError.message : 'Unknown');
+          
+          // Final fallback: CDN model with CPU
+          console.log('[VTO] Trying CDN model with CPU...');
+          poseLandmarker = await createPoseLandmarker(modelPathFallback, 'CPU');
+          console.log('[VTO] MediaPipe initialized with CDN model + CPU');
+        }
+      }
+    }
 
     mediaPipeLoaded = true;
-    console.log('[VTO] MediaPipe Pose Landmarker initialized');
+    console.log('[VTO] MediaPipe Pose Landmarker ready');
     return true;
   } catch (error) {
-    console.error('[VTO] Failed to initialize MediaPipe:', error);
+    const errorMessage = error instanceof Error 
+      ? error.message 
+      : (error instanceof Event ? 'Network/WASM loading failed' : String(error));
+    console.error('[VTO] Failed to initialize MediaPipe:', errorMessage);
     return false;
   }
 }

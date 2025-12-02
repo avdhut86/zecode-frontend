@@ -48,33 +48,70 @@ export function loadOpenCV(): Promise<boolean> {
       return;
     }
 
-    // Create script element
-    const script = document.createElement('script');
-    script.src = 'https://docs.opencv.org/4.x/opencv.js';
-    script.async = true;
+    // List of CDN sources to try (in order of reliability)
+    const cdnSources = [
+      'https://cdn.jsdelivr.net/npm/@techstark/opencv-js@4.9.0-release.2/dist/opencv.js',
+      'https://docs.opencv.org/4.9.0/opencv.js',
+      'https://docs.opencv.org/4.x/opencv.js',
+    ];
 
-    script.onload = () => {
-      // OpenCV.js uses a callback pattern
-      const checkReady = () => {
-        if (window.cv && window.cv.Mat) {
-          openCVLoaded = true;
-          openCVLoading = false;
-          console.log('[VTO] OpenCV.js loaded');
-          resolve(true);
-        } else {
-          setTimeout(checkReady, 100);
-        }
+    let sourceIndex = 0;
+
+    const tryLoadScript = () => {
+      if (sourceIndex >= cdnSources.length) {
+        console.warn('[VTO] All OpenCV CDN sources failed, using simple transform fallback');
+        openCVLoading = false;
+        resolve(false);
+        return;
+      }
+
+      const script = document.createElement('script');
+      script.src = cdnSources[sourceIndex];
+      script.async = true;
+
+      // Timeout for slow CDNs
+      const timeout = setTimeout(() => {
+        console.warn(`[VTO] OpenCV CDN ${sourceIndex + 1} timed out, trying next...`);
+        script.remove();
+        sourceIndex++;
+        tryLoadScript();
+      }, 10000);
+
+      script.onload = () => {
+        clearTimeout(timeout);
+        // OpenCV.js uses a callback pattern
+        let attempts = 0;
+        const checkReady = () => {
+          if (window.cv && window.cv.Mat) {
+            openCVLoaded = true;
+            openCVLoading = false;
+            console.log('[VTO] OpenCV.js loaded from CDN', sourceIndex + 1);
+            resolve(true);
+          } else if (attempts < 50) {
+            attempts++;
+            setTimeout(checkReady, 100);
+          } else {
+            console.warn('[VTO] OpenCV loaded but cv.Mat not ready, trying next CDN...');
+            script.remove();
+            sourceIndex++;
+            tryLoadScript();
+          }
+        };
+        checkReady();
       };
-      checkReady();
+
+      script.onerror = () => {
+        clearTimeout(timeout);
+        console.warn(`[VTO] OpenCV CDN ${sourceIndex + 1} failed, trying next...`);
+        script.remove();
+        sourceIndex++;
+        tryLoadScript();
+      };
+
+      document.head.appendChild(script);
     };
 
-    script.onerror = () => {
-      console.error('[VTO] Failed to load OpenCV.js');
-      openCVLoading = false;
-      resolve(false);
-    };
-
-    document.head.appendChild(script);
+    tryLoadScript();
   });
 }
 

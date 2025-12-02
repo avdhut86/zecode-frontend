@@ -433,9 +433,18 @@ export default function VirtualTryOn({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
-      <div className="relative w-full max-w-4xl mx-4 bg-white rounded-xl shadow-2xl overflow-hidden">
+      {/* Floating close button - always visible */}
+      <button
+        onClick={handleClose}
+        className="absolute top-4 right-4 z-[60] p-2 bg-black/50 hover:bg-black/70 rounded-full text-white transition-colors"
+        aria-label="Close virtual try-on"
+      >
+        <CloseIcon />
+      </button>
+      
+      <div className="relative w-full max-w-4xl mx-4 max-h-[90vh] overflow-y-auto bg-white rounded-xl shadow-2xl">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b bg-gray-50">
+        <div className="sticky top-0 z-10 flex items-center justify-between px-6 py-4 border-b bg-gray-50">
           <div>
             <h2 className="text-xl font-bold text-gray-900">Virtual Try-On</h2>
             <p className="text-sm text-gray-600 mt-0.5">{productName}</p>
