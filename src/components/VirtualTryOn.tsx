@@ -690,6 +690,7 @@ export default function VirtualTryOn({
             {state.status === 'ready' && state.mode !== 'webcam' && !uploadedImageRef.current && (
               <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-900/80">
                 <p className="text-white text-lg mb-4">Choose an option to try on this garment</p>
+                <p className="text-gray-500 text-xs mb-2">v2.1</p>
                 <div className="flex gap-4">
                   <button
                     onClick={startWebcam}
