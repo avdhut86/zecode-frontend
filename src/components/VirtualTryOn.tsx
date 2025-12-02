@@ -268,16 +268,21 @@ export default function VirtualTryOn({
     }
 
     setState(s => ({ ...s, mode: 'webcam', status: 'loading', errorMessage: null }));
-    console.log('[VTO] Starting webcam...');
+    console.log('[VTO] Starting webcam - requesting camera permission...');
 
     try {
-      // Simple camera request - works on all modern browsers
+      // Request camera permission - this triggers the browser prompt
+      console.log('[VTO] Calling getUserMedia...');
       const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: true,
+        video: { 
+          width: { ideal: 640 },
+          height: { ideal: 480 },
+          facingMode: 'user'
+        },
         audio: false 
       });
 
-      console.log('[VTO] Got camera stream');
+      console.log('[VTO] Got camera stream, tracks:', stream.getVideoTracks().length);
       streamRef.current = stream;
       video.srcObject = stream;
       
@@ -429,8 +434,29 @@ export default function VirtualTryOn({
     try {
       console.log('[VTO] Processing uploaded image...');
       
+      // Wait for MediaPipe to be ready (may still be loading)
+      const { isMediaPipeReady, initializeMediaPipe } = await import('@/lib/virtual-try-on/pose-detection');
+      
+      if (!isMediaPipeReady()) {
+        console.log('[VTO] MediaPipe not ready, waiting...');
+        setState(s => ({ ...s, status: 'loading' }));
+        
+        // Wait for initialization with timeout
+        const initTimeout = setTimeout(() => {}, 10000);
+        const ready = await initializeMediaPipe();
+        clearTimeout(initTimeout);
+        
+        if (!ready) {
+          throw new Error('MediaPipe failed to initialize');
+        }
+        
+        setState(s => ({ ...s, status: 'detecting' }));
+      }
+      
       // Import the pose detection function
       const { detectPoseFromImage } = await import('@/lib/virtual-try-on/pose-detection');
+      
+      console.log('[VTO] Running pose detection on image...');
       
       // Add timeout for pose detection (15 seconds max)
       const timeoutPromise = new Promise<null>((_, reject) => 
@@ -698,7 +724,7 @@ export default function VirtualTryOn({
             {state.status === 'ready' && state.mode !== 'webcam' && !uploadedImageRef.current && (
               <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-900/80 z-30">
                 <p className="text-white text-lg mb-4">Choose an option to try on this garment</p>
-                <p className="text-gray-500 text-xs mb-2">v4.0</p>
+                <p className="text-gray-500 text-xs mb-2">v4.1</p>
                 <div className="flex gap-4">
                   <button
                     onClick={startWebcam}
