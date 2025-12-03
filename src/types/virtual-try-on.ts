@@ -125,7 +125,7 @@ export interface SimpleTransform {
 // Component State Types
 // ============================================
 
-export type VTOMode = 'webcam' | 'upload';
+export type VTOMode = 'webcam' | 'upload' | null;
 export type VTOStatus = 'idle' | 'loading' | 'detecting' | 'processing' | 'ready' | 'error';
 
 export interface VTOState {
