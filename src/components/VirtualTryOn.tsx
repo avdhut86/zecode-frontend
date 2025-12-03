@@ -726,19 +726,19 @@ export default function VirtualTryOn({
             {/* Ready state - waiting for user action */}
             {state.status === 'ready' && state.mode !== 'webcam' && !uploadedImageRef.current && (
               <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-900/80 z-30">
-                <p className="text-white text-lg mb-4">Choose an option to try on this garment</p>
-                <p className="text-gray-400 text-xs mb-2">VTO v4.1.2 - Dec 2</p>
-                <div className="flex gap-4">
+                <p className="text-white text-xl font-semibold mb-2">Virtual Try-On</p>
+                <p className="text-gray-300 text-sm mb-6">See how this garment looks on you</p>
+                <div className="flex flex-col sm:flex-row gap-4">
                   <button
                     onClick={startWebcam}
-                    className="flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+                    className="flex items-center justify-center gap-2 px-6 py-3 bg-white hover:bg-gray-100 text-gray-900 rounded-lg transition-colors font-medium shadow-lg"
                   >
                     <CameraIcon />
-                    Use Camera
+                    Allow Camera Access
                   </button>
-                  <label className="flex items-center gap-2 px-6 py-3 bg-gray-700 hover:bg-gray-600 text-white rounded-lg cursor-pointer transition-colors">
+                  <label className="flex items-center justify-center gap-2 px-6 py-3 bg-gray-700 hover:bg-gray-600 text-white rounded-lg cursor-pointer transition-colors font-medium">
                     <UploadIcon />
-                    Upload Photo
+                    Upload Your Photo
                     <input
                       type="file"
                       accept="image/*"
@@ -747,6 +747,7 @@ export default function VirtualTryOn({
                     />
                   </label>
                 </div>
+                <p className="text-gray-500 text-xs mt-4">Your camera feed stays on your device</p>
               </div>
             )}
 
@@ -804,22 +805,22 @@ export default function VirtualTryOn({
                 <>
                   <button
                     onClick={startWebcam}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors font-medium ${
                       state.mode === 'webcam' 
-                        ? 'bg-blue-600 text-white' 
-                        : 'bg-gray-200 hover:bg-gray-300 text-gray-700'
+                        ? 'bg-gray-900 text-white' 
+                        : 'bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-300'
                     }`}
                   >
                     <CameraIcon />
-                    Camera
+                    {state.mode === 'webcam' ? 'Camera Active' : 'Use Camera'}
                   </button>
-                  <label className={`flex items-center gap-2 px-4 py-2 rounded-lg cursor-pointer transition-colors ${
+                  <label className={`flex items-center gap-2 px-4 py-2 rounded-lg cursor-pointer transition-colors font-medium ${
                     state.mode === 'upload' 
-                      ? 'bg-blue-600 text-white' 
-                      : 'bg-gray-200 hover:bg-gray-300 text-gray-700'
+                      ? 'bg-gray-900 text-white' 
+                      : 'bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-300'
                   }`}>
                     <UploadIcon />
-                    Upload
+                    Upload Photo
                     <input
                       type="file"
                       accept="image/*"
