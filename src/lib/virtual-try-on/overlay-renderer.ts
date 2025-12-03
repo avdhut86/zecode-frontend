@@ -14,11 +14,13 @@ import type {
 } from '@/types/virtual-try-on';
 import { POSE_LANDMARKS } from '@/types/virtual-try-on';
 import { isOpenCVReady, computePerspectiveTransform, warpPerspective } from './opencv-transform';
-import { calculateSimpleTransform, drawWithSimpleTransform } from './simple-transform';
+import { calculateSimpleTransform, drawWithSimpleTransform, removeBackground } from './simple-transform';
 
 // Cached warped overlay for performance
 let cachedWarpedOverlay: ImageData | null = null;
+let cachedProcessedImage: HTMLCanvasElement | null = null;
 let lastTransformHash: string = '';
+let lastImageUrl: string = '';
 
 /**
  * Main render function for overlay
@@ -33,14 +35,35 @@ export function renderOverlay(
   canvasHeight: number,
   useOpenCV: boolean = true
 ): boolean {
+  console.log('[VTO Overlay] renderOverlay called:', {
+    overlayImageSize: `${overlayImage.width}x${overlayImage.height}`,
+    canvasSize: `${canvasWidth}x${canvasHeight}`,
+    garmentType: overlayConfig.garmentType,
+    useOpenCV,
+    isOpenCVReady: isOpenCVReady(),
+    landmarkCount: landmarks.length
+  });
+
   // Convert landmarks to canvas coordinates for keypoint matching
   const bodyLandmarks = landmarks.map(lm => ({
     x: lm.x * canvasWidth,
     y: lm.y * canvasHeight,
   }));
 
+  // Log key body landmarks
+  const leftShoulder = bodyLandmarks[POSE_LANDMARKS.LEFT_SHOULDER];
+  const rightShoulder = bodyLandmarks[POSE_LANDMARKS.RIGHT_SHOULDER];
+  console.log('[VTO Overlay] Key landmarks (canvas coords):', {
+    leftShoulder: leftShoulder ? `(${leftShoulder.x.toFixed(0)}, ${leftShoulder.y.toFixed(0)})` : 'none',
+    rightShoulder: rightShoulder ? `(${rightShoulder.x.toFixed(0)}, ${rightShoulder.y.toFixed(0)})` : 'none'
+  });
+
+  let success = false;
+
+  // Try OpenCV first if requested and available
   if (useOpenCV && isOpenCVReady()) {
-    return renderWithOpenCV(
+    console.log('[VTO Overlay] Attempting OpenCV warp...');
+    success = renderWithOpenCV(
       ctx,
       overlayImage,
       overlayConfig,
@@ -48,8 +71,13 @@ export function renderOverlay(
       canvasWidth,
       canvasHeight
     );
-  } else {
-    return renderWithSimpleTransform(
+    console.log('[VTO Overlay] OpenCV result:', success);
+  }
+
+  // Fallback to simple transform if OpenCV failed or not available
+  if (!success) {
+    console.log('[VTO Overlay] Using simple transform...');
+    success = renderWithSimpleTransform(
       ctx,
       overlayImage,
       landmarks,
@@ -58,7 +86,10 @@ export function renderOverlay(
       overlayConfig.scaleAdjustment,
       overlayConfig.garmentType
     );
+    console.log('[VTO Overlay] Simple transform result:', success);
   }
+
+  return success;
 }
 
 /**
@@ -76,6 +107,12 @@ function renderWithOpenCV(
   const srcPoints: Point2D[] = [];
   const dstPoints: Point2D[] = [];
 
+  console.log('[VTO OpenCV] Config keypoints:', config.keypoints.map(kp => ({
+    id: kp.id,
+    position: `(${kp.position.x.toFixed(0)}, ${kp.position.y.toFixed(0)})`,
+    linkedLandmark: kp.linkedLandmark
+  })));
+
   for (const keypoint of config.keypoints) {
     const bodyPoint = bodyLandmarks[keypoint.linkedLandmark];
     if (bodyPoint) {
@@ -87,6 +124,11 @@ function renderWithOpenCV(
       });
     }
   }
+
+  console.log('[VTO OpenCV] Mapping points:', {
+    srcPoints: srcPoints.map(p => `(${p.x.toFixed(0)}, ${p.y.toFixed(0)})`),
+    dstPoints: dstPoints.map(p => `(${p.x.toFixed(0)}, ${p.y.toFixed(0)})`)
+  });
 
   if (srcPoints.length < 4 || dstPoints.length < 4) {
     console.warn('[VTO] Not enough keypoints for perspective transform');
@@ -104,11 +146,19 @@ function renderWithOpenCV(
     return false;
   }
 
+  // Process image (remove background) if not already cached
+  const imageUrl = overlayImage.src || 'canvas';
+  if (!cachedProcessedImage || lastImageUrl !== imageUrl) {
+    console.log('[VTO OpenCV] Removing background from garment image...');
+    cachedProcessedImage = removeBackground(overlayImage, 35);
+    lastImageUrl = imageUrl;
+  }
+
   // Only recompute warp if transform changed significantly
   if (transformHash !== lastTransformHash || !cachedWarpedOverlay) {
-    // Warp the overlay image
+    // Warp the processed overlay image (with background removed)
     const warpedOverlay = warpPerspective(
-      overlayImage,
+      cachedProcessedImage,
       canvasWidth,
       canvasHeight,
       transformResult.matrix as HomographyMatrix
@@ -124,11 +174,30 @@ function renderWithOpenCV(
     return false;
   }
 
-  // Draw the warped overlay with alpha blending
+  // Create a temporary canvas to hold the warped overlay
+  // This is needed because putImageData doesn't support alpha blending
+  const tempCanvas = document.createElement('canvas');
+  tempCanvas.width = canvasWidth;
+  tempCanvas.height = canvasHeight;
+  const tempCtx = tempCanvas.getContext('2d');
+  
+  if (!tempCtx) {
+    console.warn('[VTO] Failed to create temp canvas context');
+    return false;
+  }
+
+  // Put the warped image data on the temp canvas
+  tempCtx.putImageData(cachedWarpedOverlay, 0, 0);
+
+  // Now draw the temp canvas onto the main canvas with proper alpha compositing
+  // This preserves the original photo and only overlays non-transparent pixels
   ctx.save();
   ctx.globalAlpha = 0.95;
-  ctx.putImageData(cachedWarpedOverlay, 0, 0);
+  ctx.globalCompositeOperation = 'source-over'; // Normal blending
+  ctx.drawImage(tempCanvas, 0, 0);
   ctx.restore();
+
+  console.log('[VTO OpenCV] Overlay composited onto canvas');
 
   return true;
 }
@@ -176,7 +245,9 @@ function renderWithSimpleTransform(
  */
 export function clearOverlayCache(): void {
   cachedWarpedOverlay = null;
+  cachedProcessedImage = null;
   lastTransformHash = '';
+  lastImageUrl = '';
 }
 
 /**
@@ -233,35 +304,61 @@ export function loadOverlayImage(url: string): Promise<HTMLImageElement> {
  * Check if landmarks have sufficient visibility for rendering
  */
 export function hasVisibleTorso(landmarks: PoseLandmark[], garmentType?: GarmentType): boolean {
-  const minVisibility = 0.5;
+  // Lowered threshold - MediaPipe often reports lower visibility even for visible landmarks
+  const minVisibility = 0.15;
   
   const leftShoulder = landmarks[POSE_LANDMARKS.LEFT_SHOULDER];
   const rightShoulder = landmarks[POSE_LANDMARKS.RIGHT_SHOULDER];
   const leftHip = landmarks[POSE_LANDMARKS.LEFT_HIP];
   const rightHip = landmarks[POSE_LANDMARKS.RIGHT_HIP];
 
+  // Log visibility scores for debugging
+  console.log('[VTO Visibility] Torso check:', {
+    leftShoulder: leftShoulder?.visibility?.toFixed(3),
+    rightShoulder: rightShoulder?.visibility?.toFixed(3),
+    leftHip: leftHip?.visibility?.toFixed(3),
+    rightHip: rightHip?.visibility?.toFixed(3),
+    threshold: minVisibility,
+    garmentType
+  });
+
   // For bottoms, we primarily need hips visible (shoulders optional)
   if (garmentType === 'bottom') {
-    return (
+    const hipsVisible = (
       (leftHip?.visibility ?? 0) >= minVisibility &&
       (rightHip?.visibility ?? 0) >= minVisibility
     );
+    console.log('[VTO Visibility] Bottoms hips visible:', hipsVisible);
+    return hipsVisible;
   }
 
-  // For tops and default, need both shoulders and hips
-  return (
+  // For tops, only need shoulders visible (hips optional for closer selfies)
+  const shouldersVisible = (
     (leftShoulder?.visibility ?? 0) >= minVisibility &&
-    (rightShoulder?.visibility ?? 0) >= minVisibility &&
-    (leftHip?.visibility ?? 0) >= minVisibility &&
-    (rightHip?.visibility ?? 0) >= minVisibility
+    (rightShoulder?.visibility ?? 0) >= minVisibility
   );
+  
+  // If shoulders are visible, that's enough for tops
+  if (shouldersVisible) {
+    console.log('[VTO Visibility] Shoulders visible, allowing torso');
+    return true;
+  }
+
+  // Fallback: need at least one shoulder and one hip visible
+  const partialVisible = (
+    ((leftShoulder?.visibility ?? 0) >= minVisibility || (rightShoulder?.visibility ?? 0) >= minVisibility) &&
+    ((leftHip?.visibility ?? 0) >= minVisibility || (rightHip?.visibility ?? 0) >= minVisibility)
+  );
+  console.log('[VTO Visibility] Partial torso visible:', partialVisible);
+  return partialVisible;
 }
 
 /**
  * Check if full body is visible (for dresses and full-body garments)
  */
 export function hasVisibleFullBody(landmarks: PoseLandmark[]): boolean {
-  const minVisibility = 0.4;
+  // Lowered threshold for better detection
+  const minVisibility = 0.15;
   
   const leftShoulder = landmarks[POSE_LANDMARKS.LEFT_SHOULDER];
   const rightShoulder = landmarks[POSE_LANDMARKS.RIGHT_SHOULDER];
@@ -270,33 +367,50 @@ export function hasVisibleFullBody(landmarks: PoseLandmark[]): boolean {
   const leftKnee = landmarks[POSE_LANDMARKS.LEFT_KNEE];
   const rightKnee = landmarks[POSE_LANDMARKS.RIGHT_KNEE];
 
-  // Need shoulders, hips, and at least one knee for full body
-  return (
-    (leftShoulder?.visibility ?? 0) >= minVisibility &&
-    (rightShoulder?.visibility ?? 0) >= minVisibility &&
-    (leftHip?.visibility ?? 0) >= minVisibility &&
-    (rightHip?.visibility ?? 0) >= minVisibility &&
-    ((leftKnee?.visibility ?? 0) >= minVisibility || (rightKnee?.visibility ?? 0) >= minVisibility)
-  );
+  console.log('[VTO Visibility] Full body check:', {
+    leftShoulder: leftShoulder?.visibility?.toFixed(3),
+    rightShoulder: rightShoulder?.visibility?.toFixed(3),
+    leftHip: leftHip?.visibility?.toFixed(3),
+    rightHip: rightHip?.visibility?.toFixed(3),
+    leftKnee: leftKnee?.visibility?.toFixed(3),
+    rightKnee: rightKnee?.visibility?.toFixed(3),
+    threshold: minVisibility
+  });
+
+  // Need at least one shoulder and one hip visible
+  const hasShoulder = (leftShoulder?.visibility ?? 0) >= minVisibility || (rightShoulder?.visibility ?? 0) >= minVisibility;
+  const hasHip = (leftHip?.visibility ?? 0) >= minVisibility || (rightHip?.visibility ?? 0) >= minVisibility;
+  
+  // Knees are optional for selfie mode (person might be cropped)
+  const visible = hasShoulder && hasHip;
+  console.log('[VTO Visibility] Full body visible:', visible, { hasShoulder, hasHip });
+  return visible;
 }
 
 /**
  * Check if lower body is visible (for bottoms)
  */
 export function hasVisibleLowerBody(landmarks: PoseLandmark[]): boolean {
-  const minVisibility = 0.4;
+  // Lowered threshold for better detection
+  const minVisibility = 0.15;
   
   const leftHip = landmarks[POSE_LANDMARKS.LEFT_HIP];
   const rightHip = landmarks[POSE_LANDMARKS.RIGHT_HIP];
   const leftKnee = landmarks[POSE_LANDMARKS.LEFT_KNEE];
   const rightKnee = landmarks[POSE_LANDMARKS.RIGHT_KNEE];
 
-  // Need hips and at least one knee
-  return (
-    (leftHip?.visibility ?? 0) >= minVisibility &&
-    (rightHip?.visibility ?? 0) >= minVisibility &&
-    ((leftKnee?.visibility ?? 0) >= minVisibility || (rightKnee?.visibility ?? 0) >= minVisibility)
-  );
+  console.log('[VTO Visibility] Lower body check:', {
+    leftHip: leftHip?.visibility?.toFixed(3),
+    rightHip: rightHip?.visibility?.toFixed(3),
+    leftKnee: leftKnee?.visibility?.toFixed(3),
+    rightKnee: rightKnee?.visibility?.toFixed(3),
+    threshold: minVisibility
+  });
+
+  // Need at least one hip visible (knees optional for closer selfies)
+  const hasHip = (leftHip?.visibility ?? 0) >= minVisibility || (rightHip?.visibility ?? 0) >= minVisibility;
+  console.log('[VTO Visibility] Lower body visible:', hasHip);
+  return hasHip;
 }
 
 /**

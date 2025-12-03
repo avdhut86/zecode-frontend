@@ -261,16 +261,29 @@ export function warpPerspective(
   try {
     const cv = window.cv;
 
-    // Create source Mat from image
+    // Create source Mat from image - ensure we have RGBA with alpha channel
     let srcMat: any;
     if (srcImage instanceof ImageData) {
       srcMat = cv.matFromImageData(srcImage);
     } else {
-      srcMat = cv.imread(srcImage);
+      // Read image via canvas to preserve alpha channel
+      const srcCanvas = document.createElement('canvas');
+      srcCanvas.width = srcImage.width;
+      srcCanvas.height = srcImage.height;
+      const srcCtx = srcCanvas.getContext('2d');
+      if (!srcCtx) {
+        console.warn('[VTO] Failed to create source canvas context');
+        return null;
+      }
+      srcCtx.drawImage(srcImage, 0, 0);
+      const srcImageData = srcCtx.getImageData(0, 0, srcImage.width, srcImage.height);
+      srcMat = cv.matFromImageData(srcImageData);
     }
 
-    // Create output Mat
-    const dstMat = new cv.Mat();
+    console.log('[VTO OpenCV] Source image:', srcMat.cols, 'x', srcMat.rows, 'channels:', srcMat.channels());
+
+    // Create output Mat with 4 channels (RGBA) initialized to transparent
+    const dstMat = new cv.Mat(dstHeight, dstWidth, cv.CV_8UC4, new cv.Scalar(0, 0, 0, 0));
 
     // Create transform matrix
     const M = cv.matFromArray(3, 3, cv.CV_64FC1, [
@@ -279,24 +292,37 @@ export function warpPerspective(
       transformMatrix[2][0], transformMatrix[2][1], transformMatrix[2][2],
     ]);
 
-    // Apply perspective warp
+    // Apply perspective warp with transparent border
     const dstSize = new cv.Size(dstWidth, dstHeight);
-    cv.warpPerspective(srcMat, dstMat, M, dstSize, cv.INTER_LINEAR, cv.BORDER_TRANSPARENT);
+    cv.warpPerspective(srcMat, dstMat, M, dstSize, cv.INTER_LINEAR, cv.BORDER_CONSTANT, new cv.Scalar(0, 0, 0, 0));
 
-    // Convert to ImageData
+    console.log('[VTO OpenCV] Warped image:', dstMat.cols, 'x', dstMat.rows, 'channels:', dstMat.channels());
+
+    // Convert to ImageData - create canvas and draw manually to preserve alpha
     const canvas = document.createElement('canvas');
     canvas.width = dstWidth;
     canvas.height = dstHeight;
-    cv.imshow(canvas, dstMat);
     const ctx = canvas.getContext('2d');
-    const imageData = ctx?.getImageData(0, 0, dstWidth, dstHeight) || null;
+    if (!ctx) {
+      srcMat.delete();
+      dstMat.delete();
+      M.delete();
+      return null;
+    }
 
-    // Cleanup
+    // Create ImageData from Mat data
+    const imgData = new ImageData(
+      new Uint8ClampedArray(dstMat.data),
+      dstWidth,
+      dstHeight
+    );
+
+    // Cleanup OpenCV objects
     srcMat.delete();
     dstMat.delete();
     M.delete();
 
-    return imageData;
+    return imgData;
   } catch (error) {
     console.error('[VTO] Warp perspective error:', error);
     return null;

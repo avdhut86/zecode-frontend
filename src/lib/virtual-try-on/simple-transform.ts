@@ -48,36 +48,106 @@ function calculateTopTransform(
   const leftHip = landmarks[POSE_LANDMARKS.LEFT_HIP];
   const rightHip = landmarks[POSE_LANDMARKS.RIGHT_HIP];
 
-  // Check visibility
-  const minVisibility = 0.4;
+  console.log('[VTO SimpleTransform] calculateTopTransform called:', {
+    leftShoulderVis: leftShoulder?.visibility?.toFixed(3),
+    rightShoulderVis: rightShoulder?.visibility?.toFixed(3),
+    leftHipVis: leftHip?.visibility?.toFixed(3),
+    rightHipVis: rightHip?.visibility?.toFixed(3),
+    overlaySize: `${overlayWidth}x${overlayHeight}`,
+    canvasSize: `${canvasWidth}x${canvasHeight}`
+  });
+
+  // Check visibility - lowered threshold for better selfie support
+  const minVisibility = 0.15;
   if (
     (leftShoulder.visibility ?? 0) < minVisibility ||
     (rightShoulder.visibility ?? 0) < minVisibility
   ) {
+    console.log('[VTO SimpleTransform] Shoulders not visible enough');
     return null;
   }
 
   // Convert to canvas coordinates
+  // Note: In MediaPipe, LEFT_SHOULDER is the person's anatomical left
+  // which appears on the RIGHT side of the image when facing camera
   const lShoulderX = leftShoulder.x * canvasWidth;
   const lShoulderY = leftShoulder.y * canvasHeight;
   const rShoulderX = rightShoulder.x * canvasWidth;
   const rShoulderY = rightShoulder.y * canvasHeight;
+  
+  // Get hip positions for torso height
+  const lHipX = leftHip.x * canvasWidth;
+  const lHipY = leftHip.y * canvasHeight;
+  const rHipX = rightHip.x * canvasWidth;
+  const rHipY = rightHip.y * canvasHeight;
 
-  // Calculate shoulder width in canvas
-  const shoulderWidth = Math.sqrt(
-    Math.pow(rShoulderX - lShoulderX, 2) + Math.pow(rShoulderY - lShoulderY, 2)
+  console.log('[VTO SimpleTransform] Body positions (canvas coords):', {
+    leftShoulder: `(${lShoulderX.toFixed(0)}, ${lShoulderY.toFixed(0)})`,
+    rightShoulder: `(${rShoulderX.toFixed(0)}, ${rShoulderY.toFixed(0)})`,
+    leftHip: `(${lHipX.toFixed(0)}, ${lHipY.toFixed(0)})`,
+    rightHip: `(${rHipX.toFixed(0)}, ${rHipY.toFixed(0)})`
+  });
+
+  // Calculate body measurements
+  const bodyShoulderWidth = Math.sqrt(
+    Math.pow(lShoulderX - rShoulderX, 2) + Math.pow(lShoulderY - rShoulderY, 2)
   );
+  
+  // Calculate torso height (from shoulders to hips)
+  const shoulderCenterY = (lShoulderY + rShoulderY) / 2;
+  const hipCenterY = (lHipY + rHipY) / 2;
+  const torsoHeight = hipCenterY - shoulderCenterY;
 
-  // Calculate rotation angle (shoulder line)
-  const rotation = Math.atan2(rShoulderY - lShoulderY, rShoulderX - lShoulderX);
+  // Calculate rotation angle from shoulder line
+  // We want the garment to follow the shoulder tilt
+  const shoulderTilt = Math.atan2(lShoulderY - rShoulderY, lShoulderX - rShoulderX);
+  const rotation = shoulderTilt;
 
-  // Calculate scale based on shoulder width
-  const overlayShoulderWidth = overlayWidth * 0.7;
-  const scale = shoulderWidth / overlayShoulderWidth;
+  // === IMPROVED SCALING ===
+  // For a product photo garment, the shoulders are typically at ~25% and ~75% of width
+  // So the shoulder span is about 50% of the image width
+  // We want the garment to match the body shoulder width
+  const garmentShoulderWidthRatio = 0.5; // shoulders span ~50% of garment image
+  
+  // Scale so garment shoulders match body shoulders (no extra coverage factor)
+  const scaleByWidth = bodyShoulderWidth / (overlayWidth * garmentShoulderWidthRatio);
+  
+  // Also check height: torso should fit within garment's torso area
+  const garmentTorsoHeightRatio = 0.6; // torso spans ~60% of garment height (from neck to bottom)
+  const scaleByHeight = torsoHeight / (overlayHeight * garmentTorsoHeightRatio);
+  
+  // Use the SMALLER scale to ensure garment fits (not too big)
+  const scale = Math.min(scaleByWidth, scaleByHeight);
 
-  // Calculate center position (midpoint between shoulders)
+  // === IMPROVED POSITIONING ===
+  // Horizontal: center between shoulders
   const centerX = (lShoulderX + rShoulderX) / 2;
-  let translateY = (lShoulderY + rShoulderY) / 2 - (overlayHeight * scale * 0.1);
+  
+  // Vertical: The garment image has its "center" at 50% height
+  // But the visual center of a shirt is around the chest area (about 35-40% from top)
+  // We want to position this at the body's chest level (slightly below shoulders)
+  // Chest is approximately 30% of the way from shoulders to hips
+  const chestY = shoulderCenterY + (torsoHeight * 0.3);
+  
+  // The garment's visual center (chest area) is at about 40% from the top of the image
+  // So we need to offset by the distance from image center to visual center
+  const garmentVisualCenterRatio = 0.40; // chest at 40% from top
+  const garmentImageCenterRatio = 0.50;  // canvas draws from center
+  const verticalOffset = (garmentImageCenterRatio - garmentVisualCenterRatio) * overlayHeight * scale;
+  
+  const translateY = chestY + verticalOffset;
+
+  console.log('[VTO SimpleTransform] Calculated transform:', {
+    bodyShoulderWidth: bodyShoulderWidth.toFixed(0),
+    torsoHeight: torsoHeight.toFixed(0),
+    scaleByWidth: scaleByWidth.toFixed(3),
+    scaleByHeight: scaleByHeight.toFixed(3),
+    finalScale: scale.toFixed(3),
+    scaledGarmentWidth: (overlayWidth * scale).toFixed(0),
+    scaledGarmentHeight: (overlayHeight * scale).toFixed(0),
+    rotation: (rotation * 180 / Math.PI).toFixed(1) + '°',
+    center: `(${centerX.toFixed(0)}, ${translateY.toFixed(0)})`
+  });
 
   return {
     scale,
@@ -322,10 +392,24 @@ export function drawWithSimpleTransform(
   const overlayWidth = overlayImage.width;
   const overlayHeight = overlayImage.height;
 
+  console.log('[VTO SimpleTransform] drawWithSimpleTransform:', {
+    overlaySize: `${overlayWidth}x${overlayHeight}`,
+    transform: {
+      scale: transform.scale.toFixed(3),
+      rotation: (transform.rotation * 180 / Math.PI).toFixed(1) + '°',
+      position: `(${transform.translateX.toFixed(0)}, ${transform.translateY.toFixed(0)})`
+    }
+  });
+
+  // Remove background from garment image
+  const processedImage = removeBackground(overlayImage, 35);
+  console.log('[VTO SimpleTransform] Background removed from garment');
+
   applySimpleTransform(ctx, transform, overlayWidth, overlayHeight);
 
-  // Draw the overlay
-  ctx.drawImage(overlayImage, 0, 0);
+  // Draw the processed overlay (with transparent background)
+  ctx.drawImage(processedImage, 0, 0);
+  console.log('[VTO SimpleTransform] Overlay image drawn to canvas');
 
   // Restore context
   ctx.restore();
@@ -462,4 +546,96 @@ export function drawLandmarkDebug(
   }
 
   ctx.restore();
+}
+
+/**
+ * Remove background from garment image by making light colors transparent
+ * Uses corner sampling to detect background color
+ */
+export function removeBackground(
+  image: HTMLImageElement | HTMLCanvasElement,
+  tolerance: number = 30
+): HTMLCanvasElement {
+  const canvas = document.createElement('canvas');
+  canvas.width = image.width;
+  canvas.height = image.height;
+  const ctx = canvas.getContext('2d');
+  
+  if (!ctx) {
+    console.warn('[VTO] Could not create canvas for background removal');
+    // Return original as canvas
+    const fallback = document.createElement('canvas');
+    fallback.width = image.width;
+    fallback.height = image.height;
+    fallback.getContext('2d')?.drawImage(image, 0, 0);
+    return fallback;
+  }
+  
+  // Draw image to canvas
+  ctx.drawImage(image, 0, 0);
+  
+  // Get image data
+  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  const data = imageData.data;
+  
+  // Sample corners to detect background color (average of corners)
+  const sampleSize = 10;
+  const corners = [
+    { x: 0, y: 0 }, // top-left
+    { x: canvas.width - sampleSize, y: 0 }, // top-right
+    { x: 0, y: canvas.height - sampleSize }, // bottom-left
+    { x: canvas.width - sampleSize, y: canvas.height - sampleSize }, // bottom-right
+  ];
+  
+  let bgR = 0, bgG = 0, bgB = 0, samples = 0;
+  
+  for (const corner of corners) {
+    for (let y = corner.y; y < corner.y + sampleSize && y < canvas.height; y++) {
+      for (let x = corner.x; x < corner.x + sampleSize && x < canvas.width; x++) {
+        const idx = (y * canvas.width + x) * 4;
+        bgR += data[idx];
+        bgG += data[idx + 1];
+        bgB += data[idx + 2];
+        samples++;
+      }
+    }
+  }
+  
+  bgR = Math.round(bgR / samples);
+  bgG = Math.round(bgG / samples);
+  bgB = Math.round(bgB / samples);
+  
+  console.log('[VTO BackgroundRemoval] Detected background color:', { r: bgR, g: bgG, b: bgB });
+  
+  // Make pixels similar to background transparent
+  let removedPixels = 0;
+  for (let i = 0; i < data.length; i += 4) {
+    const r = data[i];
+    const g = data[i + 1];
+    const b = data[i + 2];
+    
+    // Calculate color distance from background
+    const distance = Math.sqrt(
+      Math.pow(r - bgR, 2) +
+      Math.pow(g - bgG, 2) +
+      Math.pow(b - bgB, 2)
+    );
+    
+    // If close to background color, make transparent
+    if (distance < tolerance) {
+      data[i + 3] = 0; // Set alpha to 0
+      removedPixels++;
+    } else if (distance < tolerance * 2) {
+      // Partial transparency for edge pixels (anti-aliasing)
+      const alpha = Math.round(((distance - tolerance) / tolerance) * 255);
+      data[i + 3] = Math.min(data[i + 3], alpha);
+    }
+  }
+  
+  console.log('[VTO BackgroundRemoval] Removed', removedPixels, 'background pixels');
+  
+  // Put modified data back
+  ctx.putImageData(imageData, 0, 0);
+  
+  return canvas;
 }

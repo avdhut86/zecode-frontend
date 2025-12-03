@@ -40,6 +40,7 @@ import {
   clearOverlayCache,
 } from '@/lib/virtual-try-on/overlay-renderer';
 import { drawLandmarkDebug } from '@/lib/virtual-try-on/simple-transform';
+import { generateGeminiVTO, imageUrlToBase64, resizeImageForAPI } from '@/lib/virtual-try-on/gemini-vto';
 
 // Icons
 const CameraIcon = () => (
@@ -84,7 +85,7 @@ export default function VirtualTryOn({
   onClose,
 }: VirtualTryOnProps) {
   // Version logging - check console to verify which version is deployed
-  console.log('[VTO] Component loaded - v4.3 (Dec 3, 2025) - Selfie Capture Mode');
+  console.log('[VTO] Component loaded - v6.0 (Dec 3, 2025) - Gemini AI Try-On integration');
   
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -92,6 +93,12 @@ export default function VirtualTryOn({
   const overlayImageRef = useRef<HTMLImageElement | null>(null);
   const animationFrameRef = useRef<number>(0);
   const streamRef = useRef<MediaStream | null>(null);
+
+  // AI Try-On mode state
+  const [useAITryOn, setUseAITryOn] = useState<boolean>(true); // Default to AI mode
+  const [aiProcessing, setAiProcessing] = useState<boolean>(false);
+  const [aiResultImage, setAiResultImage] = useState<string | null>(null);
+  const [aiError, setAiError] = useState<string | null>(null);
 
   const [state, setState] = useState<VTOState>({
     mode: 'webcam',
@@ -327,6 +334,12 @@ export default function VirtualTryOn({
       } else if (err.name === 'NotReadableError') {
         message = 'Camera is busy';
         hint = 'Close other apps using the camera and try again';
+      } else if (err.name === 'AbortError') {
+        message = 'Camera timed out';
+        hint = 'Close other apps or browser tabs using the camera, then try again';
+      } else if (err.name === 'OverconstrainedError') {
+        message = 'Camera settings not supported';
+        hint = 'Try using a different camera or the photo upload option';
       }
       
       setState(s => ({ 
@@ -348,6 +361,59 @@ export default function VirtualTryOn({
     }
     setSelfieState('none');
   }, []);
+
+  // Store captured selfie image for processing
+  const capturedSelfieRef = useRef<HTMLImageElement | null>(null);
+
+  // Process image with Gemini AI
+  const processWithGeminiAI = useCallback(async (userImageDataUrl: string) => {
+    console.log('[VTO Gemini] Starting AI try-on processing...');
+    setAiProcessing(true);
+    setAiError(null);
+    setAiResultImage(null);
+
+    try {
+      // Resize user image to reduce API payload
+      const resizedUserImage = await resizeImageForAPI(userImageDataUrl, 1024, 1024, 0.85);
+      console.log('[VTO Gemini] User image resized');
+
+      // Get garment image as base64
+      let garmentImageBase64: string;
+      if (productImage.startsWith('data:')) {
+        garmentImageBase64 = productImage;
+      } else {
+        garmentImageBase64 = await imageUrlToBase64(productImage);
+      }
+      
+      // Resize garment image too
+      const resizedGarmentImage = await resizeImageForAPI(garmentImageBase64, 1024, 1024, 0.9);
+      console.log('[VTO Gemini] Garment image ready');
+
+      // Call the Gemini API
+      const result = await generateGeminiVTO({
+        userImage: resizedUserImage,
+        garmentImage: resizedGarmentImage,
+        garmentType: garmentType,
+        garmentDescription: productName,
+      });
+
+      if (result.success && result.image) {
+        console.log('[VTO Gemini] Success! Generated image received');
+        setAiResultImage(result.image);
+        setState(s => ({ ...s, status: 'ready' }));
+      } else {
+        console.error('[VTO Gemini] API returned error:', result.error);
+        setAiError(result.error || 'Failed to generate try-on image');
+        setState(s => ({ ...s, status: 'error', errorMessage: result.error || 'AI processing failed' }));
+      }
+    } catch (error) {
+      console.error('[VTO Gemini] Error:', error);
+      setAiError(String(error));
+      setState(s => ({ ...s, status: 'error', errorMessage: 'AI processing failed. Please try again.' }));
+    } finally {
+      setAiProcessing(false);
+    }
+  }, [productImage, productName, garmentType]);
 
   // Capture selfie from video stream
   const captureSelfie = useCallback(() => {
@@ -380,19 +446,31 @@ export default function VirtualTryOn({
 
     // Create an image from the canvas for processing
     const imageDataUrl = canvas.toDataURL('image/jpeg', 0.9);
+    
+    // If AI mode is enabled, process with Gemini
+    if (useAITryOn) {
+      console.log('[VTO] Using AI Try-On mode (Gemini)');
+      processWithGeminiAI(imageDataUrl);
+      return;
+    }
+    
+    // Otherwise use local pose detection
     const img = new Image();
     img.onload = () => {
       console.log('[VTO] Selfie captured:', img.width, 'x', img.height);
       uploadedImageRef.current = img;
-      processUploadedImage(img);
+      capturedSelfieRef.current = img;
+      // Processing will be triggered by useEffect watching capturedSelfieRef
     };
     img.src = imageDataUrl;
-  }, []);
+  }, [useAITryOn, processWithGeminiAI]);
 
   // Retake selfie - restart camera
   const retakeSelfie = useCallback(() => {
     setSelfieState('none');
     uploadedImageRef.current = null;
+    setAiResultImage(null);
+    setAiError(null);
     startWebcam();
   }, [startWebcam]);
 
@@ -414,6 +492,8 @@ export default function VirtualTryOn({
     }
 
     stopWebcam();
+    setAiResultImage(null);
+    setAiError(null);
     setState(s => ({ ...s, mode: 'upload', status: 'loading', errorMessage: null }));
 
     // Simple FileReader approach
@@ -421,6 +501,18 @@ export default function VirtualTryOn({
     
     reader.onload = (e) => {
       console.log('[VTO] File read complete');
+      const imageDataUrl = e.target?.result as string;
+      
+      // If AI mode is enabled, process with Gemini
+      if (useAITryOn) {
+        console.log('[VTO] Using AI Try-On mode (Gemini) for uploaded image');
+        setSelfieState('captured'); // Show as captured state
+        setState(s => ({ ...s, status: 'detecting' }));
+        processWithGeminiAI(imageDataUrl);
+        return;
+      }
+      
+      // Otherwise use local pose detection
       const img = new Image();
       
       img.onload = () => {
@@ -453,7 +545,7 @@ export default function VirtualTryOn({
         }));
       };
       
-      img.src = e.target?.result as string;
+      img.src = imageDataUrl;
     };
     
     reader.onerror = (err) => {
@@ -466,15 +558,64 @@ export default function VirtualTryOn({
     };
     
     reader.readAsDataURL(file);
-  }, [stopWebcam]);
+  }, [stopWebcam, useAITryOn, processWithGeminiAI]);
 
   // Process uploaded image
   const processUploadedImage = useCallback(async (img: HTMLImageElement) => {
     const canvas = canvasRef.current;
-    if (!canvas || !overlayImageRef.current || !overlayConfig) return;
+    
+    console.log('[VTO] processUploadedImage called, checking conditions...');
+    console.log('[VTO] - canvas:', !!canvas);
+    console.log('[VTO] - overlayImageRef:', !!overlayImageRef.current);
+    console.log('[VTO] - overlayConfig:', !!overlayConfig);
+    
+    if (!canvas) {
+      console.error('[VTO] No canvas element');
+      setState(s => ({ ...s, status: 'error', errorMessage: 'Canvas not ready. Please try again.' }));
+      return;
+    }
+    
+    // If overlay image isn't loaded yet, try to load it now
+    if (!overlayImageRef.current) {
+      console.log('[VTO] Loading overlay image on demand...');
+      try {
+        const overlayImg = await loadOverlayImage(productImage);
+        overlayImageRef.current = overlayImg;
+        console.log('[VTO] Overlay image loaded:', overlayImg.width, 'x', overlayImg.height);
+      } catch (error) {
+        console.error('[VTO] Failed to load overlay image:', error);
+        setState(s => ({ ...s, status: 'error', errorMessage: 'Product image not loaded. Please try again.' }));
+        return;
+      }
+    }
+    
+    // If overlay config isn't ready, create it now
+    let config = overlayConfig;
+    if (!config && overlayImageRef.current) {
+      console.log('[VTO] Creating overlay config on demand...');
+      config = {
+        productId: productName,
+        garmentType,
+        imageUrl: productImage,
+        imageWidth: overlayImageRef.current.width,
+        imageHeight: overlayImageRef.current.height,
+        keypoints: generateDefaultKeypoints(garmentType, overlayImageRef.current.width, overlayImageRef.current.height),
+        scaleAdjustment: 1.15,
+      };
+      setOverlayConfig(config);
+    }
+    
+    if (!config) {
+      console.error('[VTO] Could not create overlay config');
+      setState(s => ({ ...s, status: 'error', errorMessage: 'Configuration not ready. Please try again.' }));
+      return;
+    }
 
     const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+    if (!ctx) {
+      console.error('[VTO] Could not get canvas context');
+      return;
+    }
 
     // Set canvas size to match image
     canvas.width = img.width;
@@ -523,29 +664,45 @@ export default function VirtualTryOn({
 
       if (result && result.landmarks.length > 0) {
         const landmarks = result.landmarks;
+        console.log('[VTO] Pose detection successful! Found', landmarks.length, 'landmarks');
 
         // Re-draw image
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.drawImage(img, 0, 0);
+        console.log('[VTO] Re-drew image on canvas');
+
+        // Check if body is visible for this garment type
+        const bodyVisible = isBodyVisible(landmarks);
+        console.log('[VTO] Body visible for garment type:', bodyVisible);
 
         // Render overlay
-        if (isBodyVisible(landmarks)) {
-          renderOverlay(
-            ctx,
-            overlayImageRef.current,
-            overlayConfig,
-            landmarks,
-            canvas.width,
-            canvas.height,
-            state.isOpenCVReady && !state.useSimpleFallback
-          );
+        if (bodyVisible) {
+          console.log('[VTO] Rendering overlay...');
+          try {
+            renderOverlay(
+              ctx,
+              overlayImageRef.current,
+              config,
+              landmarks,
+              canvas.width,
+              canvas.height,
+              state.isOpenCVReady && !state.useSimpleFallback
+            );
+            console.log('[VTO] Overlay rendered successfully');
+          } catch (overlayError) {
+            console.error('[VTO] Overlay render error:', overlayError);
+          }
+        } else {
+          console.log('[VTO] Body not fully visible, skipping overlay');
         }
 
         // Draw debug if enabled
         if (showDebug) {
           drawLandmarkDebug(ctx, landmarks, canvas.width, canvas.height);
+          console.log('[VTO] Debug landmarks drawn');
         }
 
+        console.log('[VTO] Setting status to ready');
         setState(s => ({ ...s, status: 'ready', currentPose: { landmarks } }));
       } else {
         setState(s => ({ 
@@ -565,7 +722,17 @@ export default function VirtualTryOn({
         errorMessage: errorMsg
       }));
     }
-  }, [overlayConfig, showDebug, state.isOpenCVReady, state.useSimpleFallback]);
+  }, [overlayConfig, showDebug, state.isOpenCVReady, state.useSimpleFallback, productImage, productName, garmentType]);
+
+  // Effect to process captured selfie
+  useEffect(() => {
+    if (selfieState === 'captured' && capturedSelfieRef.current && state.status === 'detecting') {
+      const img = capturedSelfieRef.current;
+      capturedSelfieRef.current = null; // Clear to prevent re-processing
+      console.log('[VTO] Processing captured selfie...');
+      processUploadedImage(img);
+    }
+  }, [selfieState, state.status, processUploadedImage]);
 
   // Main processing loop for webcam
   const startProcessingLoop = useCallback(() => {
@@ -735,11 +902,11 @@ export default function VirtualTryOn({
                   ? 'block' 
                   : 'hidden'
               }`}
-              style={{ pointerEvents: 'none' }}
+              style={{ pointerEvents: 'none', backgroundColor: selfieState === 'captured' ? '#111' : 'transparent' }}
             />
 
-            {/* Loading overlay - ONLY show when NOT in webcam mode */}
-            {(state.status === 'loading' || state.status === 'detecting') && state.mode !== 'webcam' && (
+            {/* Loading overlay - show during upload processing OR selfie processing */}
+            {(state.status === 'loading' || state.status === 'detecting') && (state.mode === 'upload' || selfieState === 'captured') && (
               <div className={`absolute inset-0 flex flex-col items-center justify-center ${
                 state.mode === 'upload' && state.status === 'detecting' 
                   ? 'bg-black/60' // Semi-transparent when showing uploaded image
@@ -809,7 +976,7 @@ export default function VirtualTryOn({
             )}
 
             {/* Ready state - waiting for user action (no image yet) */}
-            {state.status === 'ready' && selfieState !== 'preview' && !uploadedImageRef.current && (
+            {state.status === 'ready' && selfieState !== 'preview' && !uploadedImageRef.current && !aiResultImage && (
               <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-900/80 z-30">
                 <p className="text-white text-xl font-semibold mb-2">Virtual Try-On</p>
                 <p className="text-gray-300 text-sm mb-6">See how this garment looks on you</p>
@@ -868,14 +1035,74 @@ export default function VirtualTryOn({
               </div>
             )}
 
+            {/* AI Try-On Result Display */}
+            {aiResultImage && (
+              <div className="absolute inset-0 flex items-center justify-center bg-gray-900 z-40">
+                <img 
+                  src={aiResultImage} 
+                  alt="AI Virtual Try-On Result" 
+                  className="max-w-full max-h-full object-contain"
+                />
+                {/* Reset button */}
+                <button
+                  onClick={() => {
+                    setAiResultImage(null);
+                    uploadedImageRef.current = null;
+                    setState(s => ({ ...s, status: 'ready', mode: null }));
+                  }}
+                  className="absolute bottom-4 right-4 px-4 py-2 bg-white/90 hover:bg-white text-gray-900 rounded-lg font-medium shadow-lg transition-all"
+                >
+                  Try Another Photo
+                </button>
+              </div>
+            )}
+
+            {/* AI Processing Indicator */}
+            {aiProcessing && (
+              <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/80 z-40">
+                <div className="px-8 py-6 rounded-xl backdrop-blur-sm bg-black/70 text-center">
+                  <div className="flex justify-center mb-4">
+                    <SpinnerIcon />
+                  </div>
+                  <p className="text-white font-medium text-lg">✨ AI Try-On in Progress</p>
+                  <p className="mt-2 text-gray-300 text-sm">Gemini is generating your try-on image...</p>
+                  <p className="mt-1 text-gray-400 text-xs">This may take 10-30 seconds</p>
+                </div>
+              </div>
+            )}
+
+            {/* AI Error Display */}
+            {aiError && !aiProcessing && (
+              <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-900/90 p-6 z-40">
+                <div className="text-red-500 mb-4">
+                  <svg className="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                </div>
+                <p className="text-white text-lg mb-2">AI Try-On Failed</p>
+                <p className="text-gray-300 text-sm text-center max-w-md mb-4">{aiError}</p>
+                <button
+                  onClick={retakeSelfie}
+                  className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+                >
+                  Try Again
+                </button>
+              </div>
+            )}
+
             {/* Status indicators */}
             <div className="absolute top-4 right-4 flex gap-2">
-              {state.isMediaPipeReady && (
+              {useAITryOn && (
+                <span className="px-2 py-1 bg-purple-500/80 rounded text-xs text-white">
+                  AI ✨
+                </span>
+              )}
+              {!useAITryOn && state.isMediaPipeReady && (
                 <span className="px-2 py-1 bg-green-500/80 rounded text-xs text-white">
                   Pose ✓
                 </span>
               )}
-              {state.isOpenCVReady && !state.useSimpleFallback && (
+              {!useAITryOn && state.isOpenCVReady && !state.useSimpleFallback && (
                 <span className="px-2 py-1 bg-blue-500/80 rounded text-xs text-white">
                   OpenCV ✓
                 </span>
@@ -931,19 +1158,34 @@ export default function VirtualTryOn({
             </div>
 
             <div className="flex items-center gap-4">
-              {/* Debug toggle */}
-              <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
+              {/* AI Try-On Toggle */}
+              <label className="flex items-center gap-2 text-sm cursor-pointer">
                 <input
                   type="checkbox"
-                  checked={showDebug}
-                  onChange={(e) => setShowDebug(e.target.checked)}
-                  className="rounded"
+                  checked={useAITryOn}
+                  onChange={(e) => setUseAITryOn(e.target.checked)}
+                  className="rounded text-purple-600 focus:ring-purple-500"
                 />
-                Show landmarks
+                <span className={useAITryOn ? 'text-purple-700 font-medium' : 'text-gray-600'}>
+                  ✨ AI Try-On {useAITryOn && '(Gemini)'}
+                </span>
               </label>
 
-              {/* Fallback toggle */}
-              {state.isOpenCVReady && (
+              {/* Debug toggle - only show in non-AI mode */}
+              {!useAITryOn && (
+                <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={showDebug}
+                    onChange={(e) => setShowDebug(e.target.checked)}
+                    className="rounded"
+                  />
+                  Show landmarks
+                </label>
+              )}
+
+              {/* Fallback toggle - only show in non-AI mode */}
+              {!useAITryOn && state.isOpenCVReady && (
                 <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
                   <input
                     type="checkbox"
@@ -959,14 +1201,29 @@ export default function VirtualTryOn({
 
           {/* Instructions */}
           <div className="mt-4 p-4 bg-gray-50 rounded-lg">
-            <h3 className="font-medium text-gray-900 mb-2">📸 Tips for best results:</h3>
-            <ul className="text-sm text-gray-600 space-y-1">
-              <li>• <strong>Stand back</strong> about 4-6 feet from the camera</li>
-              <li>• Make sure your <strong>shoulders and chest</strong> are clearly visible</li>
-              <li>• Face the camera <strong>directly</strong> with good lighting</li>
-              <li>• Wear <strong>fitted clothing</strong> (avoid loose or baggy clothes)</li>
-              <li>• Use a <strong>plain background</strong> if possible</li>
-            </ul>
+            {useAITryOn ? (
+              <>
+                <h3 className="font-medium text-gray-900 mb-2">✨ AI Try-On Tips:</h3>
+                <ul className="text-sm text-gray-600 space-y-1">
+                  <li>• Upload a <strong>clear, well-lit photo</strong> of yourself</li>
+                  <li>• <strong>Full upper body</strong> visible works best for tops</li>
+                  <li>• Use a <strong>front-facing</strong> photo for most accurate results</li>
+                  <li>• AI processing takes <strong>10-30 seconds</strong></li>
+                  <li>• Results are generated using <strong>Google Gemini</strong> AI</li>
+                </ul>
+              </>
+            ) : (
+              <>
+                <h3 className="font-medium text-gray-900 mb-2">📸 Tips for best results:</h3>
+                <ul className="text-sm text-gray-600 space-y-1">
+                  <li>• <strong>Stand back</strong> about 4-6 feet from the camera</li>
+                  <li>• Make sure your <strong>shoulders and chest</strong> are clearly visible</li>
+                  <li>• Face the camera <strong>directly</strong> with good lighting</li>
+                  <li>• Wear <strong>fitted clothing</strong> (avoid loose or baggy clothes)</li>
+                  <li>• Use a <strong>plain background</strong> if possible</li>
+                </ul>
+              </>
+            )}
           </div>
         </div>
       </div>

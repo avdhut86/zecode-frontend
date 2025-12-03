@@ -153,7 +153,8 @@ async function main() {
             if (cloudinaryUrls[2]) updateData.model_image_3 = cloudinaryUrls[2];
             
             try {
-                token = await getDirectusToken(); // Refresh token
+                // Refresh token every 10 products
+                if (idx % 10 === 0) token = await getDirectusToken();
                 const updateRes = await fetch(`${DIRECTUS_URL}/items/products/${product.id}`, {
                     method: 'PATCH',
                     headers: {

@@ -80,7 +80,7 @@ export async function fetchPage(slug: string) {
     const url = getApiUrl("/items/pages");
     const res = await axios.get(url, {
       params: { "filter[slug][_eq]": slug, limit: 1 },
-      timeout: 10000,
+      timeout: TIMEOUT_DEFAULT,
     });
     return res?.data?.data?.[0] ?? null;
   } catch (err: any) {
@@ -97,7 +97,7 @@ export async function fetchGlobalSettings(): Promise<GlobalSettings | null> {
   try {
     const url = getApiUrl("/items/globals");
     const res = await axios.get(url, {
-      timeout: 10000,
+      timeout: TIMEOUT_DEFAULT,
     });
     return res?.data?.data ?? null;
   } catch (err: any) {
@@ -182,7 +182,7 @@ export async function fetchCategories(): Promise<Category[] | null> {
         sort: "sort",
         fields: "*,subcategories.*"
       },
-      timeout: 10000,
+      timeout: TIMEOUT_DEFAULT,
     });
     return res?.data?.data ?? null;
   } catch (err: any) {
@@ -203,7 +203,7 @@ export async function fetchCategoryBySlug(slug: string): Promise<Category | null
         fields: "*,subcategories.*",
         limit: 1
       },
-      timeout: 10000,
+      timeout: TIMEOUT_DEFAULT,
     });
     return res?.data?.data?.[0] ?? null;
   } catch (err: any) {
@@ -264,7 +264,7 @@ export const fetchStores = typeof window === 'undefined'
 export async function fetchStoreById(id: number | string): Promise<Store | null> {
   try {
     const url = getApiUrl(`/items/stores/${id}`);
-    const res = await axios.get(url, { timeout: 10000 });
+    const res = await axios.get(url, { timeout: TIMEOUT_DEFAULT });
     return res?.data?.data ?? null;
   } catch (err: any) {
     console.error("Directus fetchStoreById error:", err.message);
@@ -392,7 +392,7 @@ export async function fetchProductBySlug(slug: string): Promise<Product | null> 
         "filter[slug][_eq]": slug,
         limit: 1
       },
-      timeout: 10000,
+      timeout: TIMEOUT_DEFAULT,
     });
     return res?.data?.data?.[0] ?? null;
   } catch (err: any) {
@@ -522,7 +522,7 @@ export async function fetchNavigationMenu(): Promise<NavigationItem[] | null> {
     const url = getApiUrl("/items/navigation_menu");
     const res = await axios.get(url, {
       params: { sort: "sort" },
-      timeout: 10000,
+      timeout: TIMEOUT_DEFAULT,
     });
     return res?.data?.data ?? null;
   } catch (err: any) {
@@ -537,7 +537,7 @@ export async function fetchNavigationMenu(): Promise<NavigationItem[] | null> {
 export async function fetchSiteSettings(): Promise<SiteSettings | null> {
   try {
     const url = getApiUrl("/items/site_settings");
-    const res = await axios.get(url, { timeout: 10000 });
+    const res = await axios.get(url, { timeout: TIMEOUT_DEFAULT });
     return res?.data?.data ?? null;
   } catch (err: any) {
     console.error("Directus fetchSiteSettings error:", err.message);
@@ -551,7 +551,7 @@ export async function fetchSiteSettings(): Promise<SiteSettings | null> {
 export async function fetchHeaderSettings(): Promise<HeaderSettings | null> {
   try {
     const url = getApiUrl("/items/header_settings");
-    const res = await axios.get(url, { timeout: 10000 });
+    const res = await axios.get(url, { timeout: TIMEOUT_DEFAULT });
     return res?.data?.data ?? null;
   } catch (err: any) {
     console.error("Directus fetchHeaderSettings error:", err.message);
@@ -565,7 +565,7 @@ export async function fetchHeaderSettings(): Promise<HeaderSettings | null> {
 export async function fetchFooterSettings(): Promise<FooterSettings | null> {
   try {
     const url = getApiUrl("/items/footer_settings");
-    const res = await axios.get(url, { timeout: 10000 });
+    const res = await axios.get(url, { timeout: TIMEOUT_DEFAULT });
     return res?.data?.data ?? null;
   } catch (err: any) {
     console.error("Directus fetchFooterSettings error:", err.message);
@@ -581,7 +581,7 @@ export async function fetchSocialLinks(): Promise<SocialLink[] | null> {
     const url = getApiUrl("/items/social_links");
     const res = await axios.get(url, {
       params: { sort: "sort" },
-      timeout: 10000,
+      timeout: TIMEOUT_DEFAULT,
     });
     return res?.data?.data ?? null;
   } catch (err: any) {
@@ -627,7 +627,7 @@ export async function fetchFooterLinkGroups(): Promise<FooterLinkGroup[] | null>
         sort: "sort",
         "filter[status][_eq]": "published"
       },
-      timeout: 10000,
+      timeout: TIMEOUT_DEFAULT,
     });
     return res?.data?.data ?? null;
   } catch (err: any) {
@@ -647,7 +647,7 @@ export async function fetchFooterLinks(): Promise<FooterLink[] | null> {
         sort: "group,sort",
         "filter[status][_eq]": "published"
       },
-      timeout: 10000,
+      timeout: TIMEOUT_DEFAULT,
     });
     return res?.data?.data ?? null;
   } catch (err: any) {
@@ -667,7 +667,7 @@ export async function fetchDirectusSocialLinks(): Promise<DirectusSocialLink[] |
         sort: "sort",
         "filter[status][_eq]": "published"
       },
-      timeout: 10000,
+      timeout: TIMEOUT_DEFAULT,
     });
     return res?.data?.data ?? null;
   } catch (err: any) {
@@ -698,7 +698,7 @@ export async function fetchDirectusNavigation(): Promise<DirectusNavigationItem[
         sort: "parent,sort",
         "filter[status][_eq]": "published"
       },
-      timeout: 10000,
+      timeout: TIMEOUT_DEFAULT,
     });
     return res?.data?.data ?? null;
   } catch (err: any) {
@@ -722,7 +722,7 @@ export type DirectusFooterSettings = {
 export async function fetchDirectusFooterSettings(): Promise<DirectusFooterSettings | null> {
   try {
     const url = getApiUrl("/items/footer_settings");
-    const res = await axios.get(url, { timeout: 10000 });
+    const res = await axios.get(url, { timeout: TIMEOUT_DEFAULT });
     return res?.data?.data ?? null;
   } catch (err: any) {
     console.error("Directus fetchDirectusFooterSettings error:", err.message);
@@ -760,7 +760,7 @@ export async function fetchHomepageSections(): Promise<HomepageSection[] | null>
         sort: "sort",
         "filter[status][_eq]": "published"
       },
-      timeout: 10000,
+      timeout: TIMEOUT_DEFAULT,
     });
     return res?.data?.data ?? null;
   } catch (err: any) {
@@ -780,7 +780,7 @@ export async function fetchHomepageSection(sectionKey: string): Promise<Homepage
         "filter[section_key][_eq]": sectionKey,
         limit: 1
       },
-      timeout: 10000,
+      timeout: TIMEOUT_DEFAULT,
     });
     return res?.data?.data?.[0] ?? null;
   } catch (err: any) {
@@ -788,3 +788,4 @@ export async function fetchHomepageSection(sectionKey: string): Promise<Homepage
     return null;
   }
 }
+

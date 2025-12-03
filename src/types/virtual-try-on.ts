@@ -255,11 +255,13 @@ function getDefaultPositions(
   switch (garmentType) {
     case 'top':
     case 'outerwear':
+      // Tops: shoulders near top, hips at bottom
+      // Centered product photo - garment typically fills ~60% of width
       return {
-        left_shoulder: { x: imageWidth * 0.15, y: imageHeight * 0.08 },
-        right_shoulder: { x: imageWidth * 0.85, y: imageHeight * 0.08 },
-        left_hip: { x: imageWidth * 0.20, y: imageHeight * 0.95 },
-        right_hip: { x: imageWidth * 0.80, y: imageHeight * 0.95 },
+        left_shoulder: { x: imageWidth * 0.25, y: imageHeight * 0.12 },
+        right_shoulder: { x: imageWidth * 0.75, y: imageHeight * 0.12 },
+        left_hip: { x: imageWidth * 0.28, y: imageHeight * 0.85 },
+        right_hip: { x: imageWidth * 0.72, y: imageHeight * 0.85 },
       };
     
     case 'bottom':

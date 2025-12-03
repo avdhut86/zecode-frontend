@@ -205,13 +205,13 @@ Generate a professional product photo suitable for a fashion e-commerce website.
                 console.log(`      API error: ${errMsg.slice(0, 60)}`);
                 
                 if (errMsg.includes('RESOURCE_EXHAUSTED') || errMsg.includes('quota')) {
-                    console.log(`      Rate limited, waiting 90s...`);
-                    await sleep(90000);
+                    console.log(`      Rate limited, waiting 150s...`);
+                    await sleep(150000);
                     continue;
                 }
                 if (errMsg.includes('Internal') || errMsg.includes('overloaded')) {
-                    console.log(`      Server busy, waiting 45s...`);
-                    await sleep(45000);
+                    console.log(`      Server busy, waiting 60s...`);
+                    await sleep(60000);
                     continue;
                 }
                 if (errMsg.includes('SAFETY') || errMsg.includes('blocked')) {
