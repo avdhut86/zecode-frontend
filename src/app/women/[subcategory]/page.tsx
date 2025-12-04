@@ -19,7 +19,7 @@ function getSessionId(imagePath: string | null | undefined): string | null {
 }
 
 /**
- * Build gallery with only matching model images (same photo session)
+ * Build gallery with model images - include AI-generated images from Cloudinary
  */
 function buildMatchingGallery(product: any): string[] {
   const mainImage = product.image || product.image_url;
@@ -28,7 +28,7 @@ function buildMatchingGallery(product: any): string[] {
   // Start with the main product image
   const gallery: string[] = [mainImage].filter(Boolean);
   
-  // Only add model images if they match the same photo session
+  // Add model images - either matching session ID or AI-generated (Cloudinary URLs)
   const modelImages = [
     product.model_image_1,
     product.model_image_2,
@@ -37,8 +37,11 @@ function buildMatchingGallery(product: any): string[] {
   
   for (const modelImg of modelImages) {
     const modelSessionId = getSessionId(modelImg);
-    // Only include if session IDs match
-    if (mainSessionId && modelSessionId && mainSessionId === modelSessionId) {
+    // Include if: session IDs match OR it's an AI-generated image (Cloudinary URL)
+    const isCloudinaryImage = modelImg.includes('cloudinary.com');
+    const isMatchingSession = mainSessionId && modelSessionId && mainSessionId === modelSessionId;
+    
+    if (isCloudinaryImage || isMatchingSession) {
       gallery.push(modelImg);
     }
   }
