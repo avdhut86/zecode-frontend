@@ -56,6 +56,22 @@ const SUBCATEGORY_MAP: Record<string, string | string[]> = {
   'jackets': 'Jacket',
   'shoes': 'Footwear',
   'accessories': 'Accessories',
+  'tshirts': ['T', 'T-Shirt'],
+  'shirts': 'Shirt',
+  'shorts': 'Shorts',
+  'tunics': 'Tunic',
+  'hoodies': 'Hoodie',
+  'tanks': 'Tank',
+  'sweaters': 'Sweater',
+  'sweatpants': 'Sweatpants',
+  'sweatshirts': 'Sweatshirt',
+  'tracksuits': 'Track',
+  'vests': 'Vest',
+  'visors': 'Visor',
+  'backpacks': 'Backpack',
+  'flats': 'Flats',
+  'mules': 'Mules',
+  'apparel': 'Apparel',  // Generic fallback
 };
 
 const TITLE_MAP: Record<string, string> = {
@@ -68,6 +84,22 @@ const TITLE_MAP: Record<string, string> = {
   'jackets': 'Jackets',
   'shoes': 'Shoes',
   'accessories': 'Accessories',
+  'tshirts': 'T-Shirts',
+  'shirts': 'Shirts',
+  'shorts': 'Shorts',
+  'tunics': 'Tunics',
+  'hoodies': 'Hoodies',
+  'tanks': 'Tank Tops',
+  'sweaters': 'Sweaters',
+  'sweatpants': 'Sweatpants',
+  'sweatshirts': 'Sweatshirts',
+  'tracksuits': 'Tracksuits',
+  'vests': 'Vests',
+  'visors': 'Visors',
+  'backpacks': 'Backpacks',
+  'flats': 'Flats',
+  'mules': 'Mules',
+  'apparel': 'Apparel',
 };
 
 // Reverse mapping from CMS subcategory values to route slugs

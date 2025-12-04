@@ -51,6 +51,13 @@ const SUBCATEGORY_MAP: Record<string, string | string[]> = {
   'girls-tops': 'Tops',
   'boys-jeans': 'Bottoms',
   'girls-dresses': 'Dresses',
+  // Additional kids subcategories
+  'tops': 'Tops',
+  'bottoms': 'Bottoms',
+  'tracksuits': 'Tracksuit',
+  'jumpsuits': 'Jumpsuits',
+  'outerwear': 'Outerwear',
+  'apparel': 'Apparel',  // Generic fallback
 };
 
 const TITLE_MAP: Record<string, string> = {
@@ -67,6 +74,13 @@ const TITLE_MAP: Record<string, string> = {
   'girls-tops': "Girls' Tops",
   'boys-jeans': "Boys' Jeans",
   'girls-dresses': "Girls' Dresses",
+  // Additional kids subcategories
+  'tops': 'Tops',
+  'bottoms': 'Bottoms',
+  'tracksuits': 'Tracksuits',
+  'jumpsuits': 'Jumpsuits',
+  'outerwear': 'Outerwear',
+  'apparel': 'Apparel',
 };
 
 // Reverse mapping from CMS subcategory values to route slugs

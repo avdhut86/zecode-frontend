@@ -1,0 +1,119 @@
+[
+  {
+    "id": 226,
+    "name": "Men's Beige Casual Backpack",
+    "slug": "men-s-beige-casual-backpack",
+    "gender": "Men",
+    "subcategory": "Backpack",
+    "image_path": "/products/extracted-products/male_beige_backpack_outer__DSC3383_org_4.png",
+    "image_url": "https://res.cloudinary.com/ds8llatku/image/upload/f_auto,q_auto/zecode/products/extracted-products/male_beige_backpack_outer__DSC3383_org_4"
+  },
+  {
+    "id": 233,
+    "name": "Women's White Casual Striped Print Top",
+    "slug": "women-s-white-casual-striped-print-top",
+    "gender": "Women",
+    "subcategory": "Top",
+    "image_path": "/products/extracted-products/model3_female_white_top_striped__DSC4293_Large_7.png",
+    "image_url": "https://res.cloudinary.com/ds8llatku/image/upload/f_auto,q_auto/zecode/products/extracted-products/model3_female_white_top_striped__DSC4293_Large_7"
+  },
+  {
+    "id": 236,
+    "name": "Men's Grey Casual Jacket",
+    "slug": "men-s-grey-casual-jacket",
+    "gender": "Men",
+    "subcategory": "Jacket",
+    "image_path": "/products/extracted-products/male_grey_jacket_outer__DSC7902_1.png",
+    "image_url": "https://res.cloudinary.com/ds8llatku/image/upload/f_auto,q_auto/zecode/products/extracted-products/male_grey_jacket_outer__DSC7902_1"
+  },
+  {
+    "id": 238,
+    "name": "Men's Off white Casual Graphic Print Shirt",
+    "slug": "men-s-off-white-casual-graphic-print-shirt",
+    "gender": "Men",
+    "subcategory": "Shirt",
+    "image_path": "/products/extracted-products/male_off-white_button_up_shirt_graphic__DSC3800_Large_1.png",
+    "image_url": "https://res.cloudinary.com/ds8llatku/image/upload/f_auto,q_auto/zecode/products/extracted-products/male_off-white_button_up_shirt_graphic__DSC3800_Large_1"
+  },
+  {
+    "id": 239,
+    "name": "Men's Olive Casual Short",
+    "slug": "men-s-olive-casual-short",
+    "gender": "Men",
+    "subcategory": "Short",
+    "image_path": "/products/extracted-products/male_olive_green_short_sleeve_shirt_outer__DSC7728_1.png",
+    "image_url": "https://res.cloudinary.com/ds8llatku/image/upload/f_auto,q_auto/zecode/products/extracted-products/male_olive_green_short_sleeve_shirt_outer__DSC7728_1"
+  },
+  {
+    "id": 240,
+    "name": "Men's White Casual Graphic Print Hoodie",
+    "slug": "men-s-white-casual-graphic-print-hoodie",
+    "gender": "Men",
+    "subcategory": "Hoodie",
+    "image_path": "/products/extracted-products/male_white_hoodie_graphic__DSC5743_1.png",
+    "image_url": "https://res.cloudinary.com/ds8llatku/image/upload/f_auto,q_auto/zecode/products/extracted-products/male_white_hoodie_graphic__DSC5743_1"
+  },
+  {
+    "id": 242,
+    "name": "Women's Black Casual Graphic Print Visor",
+    "slug": "women-s-black-casual-graphic-print-visor",
+    "gender": "Women",
+    "subcategory": "Visor",
+    "image_path": "/products/extracted-products/model2_female_black_visor_outer_graphic__DSC3800_Large_4.png",
+    "image_url": "https://res.cloudinary.com/ds8llatku/image/upload/f_auto,q_auto/zecode/products/extracted-products/model2_female_black_visor_outer_graphic__DSC3800_Large_4"
+  },
+  {
+    "id": 243,
+    "name": "Women's Dark Casual Graphic Print T-Shirt",
+    "slug": "women-s-dark-casual-graphic-print-t-shirt",
+    "gender": "Women",
+    "subcategory": "T",
+    "image_path": "/products/extracted-products/model2_female_dark_green_t_shirt_graphic__DSC4447_Large_3.png",
+    "image_url": "https://res.cloudinary.com/ds8llatku/image/upload/f_auto,q_auto/zecode/products/extracted-products/model2_female_dark_green_t_shirt_graphic__DSC4447_Large_3"
+  },
+  {
+    "id": 246,
+    "name": "Women's Light Casual Vest",
+    "slug": "women-s-light-casual-vest",
+    "gender": "Women",
+    "subcategory": "Vest",
+    "image_path": "/products/extracted-products/model2_female_light_blue_vest_outer__DSC4404_Large_4.png",
+    "image_url": "https://res.cloudinary.com/ds8llatku/image/upload/f_auto,q_auto/zecode/products/extracted-products/model2_female_light_blue_vest_outer__DSC4404_Large_4"
+  },
+  {
+    "id": 247,
+    "name": "Women's Maroon Casual Graphic Print Sweatshirt",
+    "slug": "women-s-maroon-casual-graphic-print-sweatshirt",
+    "gender": "Women",
+    "subcategory": "Sweatshirt",
+    "image_path": "/products/extracted-products/model2_female_maroon_sweatshirt_graphic__DSC4648_Large_4.png",
+    "image_url": "https://res.cloudinary.com/ds8llatku/image/upload/f_auto,q_auto/zecode/products/extracted-products/model2_female_maroon_sweatshirt_graphic__DSC4648_Large_4"
+  },
+  {
+    "id": 252,
+    "name": "Men's Maroon Casual Graphic Print Short",
+    "slug": "men-s-maroon-casual-graphic-print-short",
+    "gender": "Men",
+    "subcategory": "Short",
+    "image_path": "/products/extracted-products/model3_male_maroon_short_sleeved_shirt_graphic__DSC4148_1_7.png",
+    "image_url": "https://res.cloudinary.com/ds8llatku/image/upload/f_auto,q_auto/zecode/products/extracted-products/model3_male_maroon_short_sleeved_shirt_graphic__DSC4148_1_7"
+  },
+  {
+    "id": 254,
+    "name": "Women's Black Casual Flats",
+    "slug": "women-s-black-casual-flats",
+    "gender": "Women",
+    "subcategory": "Flats",
+    "image_path": "/products/extracted-products/model4_female_black_flats__DSC4148_1_12.png",
+    "image_url": "https://res.cloudinary.com/ds8llatku/image/upload/f_auto,q_auto/zecode/products/extracted-products/model4_female_black_flats__DSC4148_1_12"
+  },
+  {
+    "id": 255,
+    "name": "Men's Light Casual Graphic Print T-Shirt",
+    "slug": "men-s-light-casual-graphic-print-t-shirt",
+    "gender": "Men",
+    "subcategory": "T",
+    "image_path": "/products/extracted-products/model4_male_light_green_t_shirt_under_graphic__DSC4293_Large_10.png",
+    "image_url": "https://res.cloudinary.com/ds8llatku/image/upload/f_auto,q_auto/zecode/products/extracted-products/model4_male_light_green_t_shirt_under_graphic__DSC4293_Large_10"
+  }
+]
