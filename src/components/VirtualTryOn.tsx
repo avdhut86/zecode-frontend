@@ -85,7 +85,7 @@ export default function VirtualTryOn({
   onClose,
 }: VirtualTryOnProps) {
   // Version logging - check console to verify which version is deployed
-  console.log('[VTO] Component loaded - v6.0 (Dec 3, 2025) - Gemini AI Try-On integration');
+  console.log('[VTO] Component loaded - v7.0 (Dec 4, 2025) - Gemini 3 Pro Image Preview integration');
   
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);

@@ -5,14 +5,14 @@
  * Gemini's image generation capabilities to create a realistic
  * virtual try-on result.
  * 
- * Using: gemini-2.0-flash-exp-image-generation (has free tier quota)
+ * Using: gemini-3-pro-image-preview (best quality for image generation)
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 
 const GEMINI_API_KEY = process.env.GOOGLE_GEMINI_API_KEY || process.env.GOOGLE_API_KEY || process.env.GEMINI_API_KEY;
-// Use gemini-2.0-flash-exp-image-generation which has free tier quota
-const GEMINI_MODEL = process.env.GEMINI_VTO_MODEL || 'gemini-2.0-flash-exp-image-generation';
+// Use gemini-3-pro-image-preview which produces best quality image generation
+const GEMINI_MODEL = process.env.GEMINI_VTO_MODEL || 'gemini-3-pro-image-preview';
 const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
 
 interface VTORequest {
