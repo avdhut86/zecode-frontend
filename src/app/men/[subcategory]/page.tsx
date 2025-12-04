@@ -61,6 +61,26 @@ const TITLE_MAP: Record<string, string> = {
   'shorts': 'Shorts',
 };
 
+// Reverse mapping from CMS subcategory values to route slugs
+function getSubcategorySlug(cmsSubcategory: string | null | undefined): string {
+  if (!cmsSubcategory) return 'men';
+  const lowerSub = cmsSubcategory.toLowerCase();
+  for (const [slug, cmsValues] of Object.entries(SUBCATEGORY_MAP)) {
+    if (Array.isArray(cmsValues)) {
+      if (cmsValues.some(v => v.toLowerCase() === lowerSub)) return slug;
+    } else if (cmsValues.toLowerCase() === lowerSub) {
+      return slug;
+    }
+  }
+  return 'men'; // fallback
+}
+
+// Get display title from CMS subcategory
+function getSubcategoryTitle(cmsSubcategory: string | null | undefined): string {
+  const slug = getSubcategorySlug(cmsSubcategory);
+  return TITLE_MAP[slug] || cmsSubcategory || 'Men';
+}
+
 interface PageProps {
   params: Promise<{ subcategory: string }>;
 }
@@ -142,11 +162,15 @@ export default async function MenSubcategoryPage({ params }: PageProps) {
     const mainImage = product.image || product.image_url;
     const matchingGallery = buildMatchingGallery(product);
     
+    // Get proper subcategory slug and title
+    const subcategorySlug = getSubcategorySlug(product.subcategory);
+    const subcategoryTitle = getSubcategoryTitle(product.subcategory);
+    
     const productDetail = {
       id: product.id,
       name: product.name,
-      category: product.category || 'Men',
-      categoryLabel: product.subcategory || 'Men',
+      category: `men/${subcategorySlug}`,  // Route path like "men/tshirts"
+      categoryLabel: subcategoryTitle,      // Display title like "T-Shirts"
       price: product.price,
       originalPrice: product.sale_price,
       image: fileUrl(mainImage) || '',

@@ -70,6 +70,26 @@ const TITLE_MAP: Record<string, string> = {
   'accessories': 'Accessories',
 };
 
+// Reverse mapping from CMS subcategory values to route slugs
+function getSubcategorySlug(cmsSubcategory: string | null | undefined): string {
+  if (!cmsSubcategory) return 'women';
+  const lowerSub = cmsSubcategory.toLowerCase();
+  for (const [slug, cmsValues] of Object.entries(SUBCATEGORY_MAP)) {
+    if (Array.isArray(cmsValues)) {
+      if (cmsValues.some(v => v.toLowerCase() === lowerSub)) return slug;
+    } else if (cmsValues.toLowerCase() === lowerSub) {
+      return slug;
+    }
+  }
+  return 'women'; // fallback
+}
+
+// Get display title from CMS subcategory
+function getSubcategoryTitle(cmsSubcategory: string | null | undefined): string {
+  const slug = getSubcategorySlug(cmsSubcategory);
+  return TITLE_MAP[slug] || cmsSubcategory || 'Women';
+}
+
 interface PageProps {
   params: Promise<{ subcategory: string }>;
 }
@@ -147,11 +167,16 @@ export default async function WomenSubcategoryPage({ params }: PageProps) {
     // Map Directus product to ProductDetail interface
     // Build gallery with matching model images (same photo session)
     const gallery = buildMatchingGallery(product);
+    
+    // Get proper subcategory slug and title
+    const subcategorySlug = getSubcategorySlug(product.subcategory);
+    const subcategoryTitle = getSubcategoryTitle(product.subcategory);
+    
     const productDetail = {
       id: product.id,
       name: product.name,
-      category: product.category || 'Women',
-      categoryLabel: product.subcategory || 'Women',
+      category: `women/${subcategorySlug}`,  // Route path like "women/dresses"
+      categoryLabel: subcategoryTitle,        // Display title like "Dresses"
       price: product.price,
       originalPrice: product.sale_price,
       image: fileUrl(gallery[0]) || '',
