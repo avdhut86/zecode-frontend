@@ -5,16 +5,14 @@
  * Gemini's image generation capabilities to create a realistic
  * virtual try-on result.
  * 
- * Supported models (in order of preference):
- * - gemini-2.0-flash-exp-image-generation (free tier available)
- * - gemini-2.5-flash-image (Nano Banana)
+ * Using: gemini-3-pro-image-preview (Nano Banana Pro)
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 
 const GEMINI_API_KEY = process.env.GOOGLE_GEMINI_API_KEY || process.env.GOOGLE_API_KEY || process.env.GEMINI_API_KEY;
-// Use gemini-2.0-flash-exp-image-generation which has free tier quota
-const GEMINI_MODEL = process.env.GEMINI_VTO_MODEL || 'gemini-2.0-flash-exp-image-generation';
+// Use gemini-3-pro-image-preview (Nano Banana Pro) for best VTO results
+const GEMINI_MODEL = process.env.GEMINI_VTO_MODEL || 'gemini-3-pro-image-preview';
 const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
 
 interface VTORequest {
