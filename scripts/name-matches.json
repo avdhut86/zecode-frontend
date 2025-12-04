@@ -1,0 +1,719 @@
+[
+  {
+    "productId": 8,
+    "productName": "Women's Black Casual Dress",
+    "fileKey": "Womens_Black_Casual_Dress",
+    "files": [
+      "Womens_Black_Casual_Dress_front_standing.png",
+      "Womens_Black_Casual_Dress_three_quarter.png"
+    ]
+  },
+  {
+    "productId": 15,
+    "productName": "Women's Black Casual Graphic Print Dress",
+    "fileKey": "Womens_Black_Casual_Graphic_Print_Dress",
+    "files": [
+      "Womens_Black_Casual_Graphic_Print_Dress_casual_lifestyle.png",
+      "Womens_Black_Casual_Graphic_Print_Dress_front_standing.png",
+      "Womens_Black_Casual_Graphic_Print_Dress_three_quarter.png"
+    ]
+  },
+  {
+    "productId": 21,
+    "productName": "Women's Blue Casual Jeans",
+    "fileKey": "Womens_Blue_Casual_Jeans",
+    "files": [
+      "Womens_Blue_Casual_Jeans_casual_lifestyle.png",
+      "Womens_Blue_Casual_Jeans_front_standing.png",
+      "Womens_Blue_Casual_Jeans_three_quarter.png"
+    ]
+  },
+  {
+    "productId": 24,
+    "productName": "Women's Blue Casual Jeans",
+    "fileKey": "Womens_Blue_Casual_Jeans",
+    "files": [
+      "Womens_Blue_Casual_Jeans_casual_lifestyle.png",
+      "Womens_Blue_Casual_Jeans_front_standing.png",
+      "Womens_Blue_Casual_Jeans_three_quarter.png"
+    ]
+  },
+  {
+    "productId": 34,
+    "productName": "Women's Black Casual Pants",
+    "fileKey": "Womens_Black_Casual_Pants",
+    "files": [
+      "Womens_Black_Casual_Pants_casual_lifestyle.png",
+      "Womens_Black_Casual_Pants_front_standing.png",
+      "Womens_Black_Casual_Pants_three_quarter.png"
+    ]
+  },
+  {
+    "productId": 40,
+    "productName": "Women's Light Casual Jacket",
+    "fileKey": "Womens_Light_Casual_Jacket",
+    "files": [
+      "Womens_Light_Casual_Jacket_casual_lifestyle.png",
+      "Womens_Light_Casual_Jacket_front_standing.png",
+      "Womens_Light_Casual_Jacket_three_quarter.png"
+    ]
+  },
+  {
+    "productId": 42,
+    "productName": "Women's Light Casual Jeans",
+    "fileKey": "Womens_Light_Casual_Jeans",
+    "files": [
+      "Womens_Light_Casual_Jeans_casual_lifestyle.png",
+      "Womens_Light_Casual_Jeans_front_standing.png",
+      "Womens_Light_Casual_Jeans_three_quarter.png"
+    ]
+  },
+  {
+    "productId": 45,
+    "productName": "Women's Light Casual Jacket",
+    "fileKey": "Womens_Light_Casual_Jacket",
+    "files": [
+      "Womens_Light_Casual_Jacket_casual_lifestyle.png",
+      "Womens_Light_Casual_Jacket_front_standing.png",
+      "Womens_Light_Casual_Jacket_three_quarter.png"
+    ]
+  },
+  {
+    "productId": 53,
+    "productName": "Kids's Navy Casual Graphic Print Jumpsuits",
+    "fileKey": "Kidss_Navy_Casual_Graphic_Print_Jumpsuits",
+    "files": [
+      "Kidss_Navy_Casual_Graphic_Print_Jumpsuits_casual_lifestyle.png",
+      "Kidss_Navy_Casual_Graphic_Print_Jumpsuits_front_standing.png",
+      "Kidss_Navy_Casual_Graphic_Print_Jumpsuits_three_quarter.png"
+    ]
+  },
+  {
+    "productId": 65,
+    "productName": "Women's Red Casual Top",
+    "fileKey": "Womens_Red_Casual_Top",
+    "files": [
+      "Womens_Red_Casual_Top_casual_lifestyle.png",
+      "Womens_Red_Casual_Top_front_standing.png",
+      "Womens_Red_Casual_Top_three_quarter.png"
+    ]
+  },
+  {
+    "productId": 73,
+    "productName": "Men's Black Casual Jacket",
+    "fileKey": "Mens_Black_Casual_Jacket",
+    "files": [
+      "Mens_Black_Casual_Jacket_casual_lifestyle.png",
+      "Mens_Black_Casual_Jacket_front_standing.png",
+      "Mens_Black_Casual_Jacket_three_quarter.png"
+    ]
+  },
+  {
+    "productId": 77,
+    "productName": "Men's Black Casual Graphic Print T-Shirt",
+    "fileKey": "Mens_Black_Casual_Graphic_Print_Sweatshirt",
+    "files": [
+      "Mens_Black_Casual_Graphic_Print_Sweatshirt_casual_lifestyle.png",
+      "Mens_Black_Casual_Graphic_Print_Sweatshirt_front_standing.png",
+      "Mens_Black_Casual_Graphic_Print_Sweatshirt_three_quarter.png"
+    ]
+  },
+  {
+    "productId": 81,
+    "productName": "Men's Black Casual Pants",
+    "fileKey": "Mens_Black_Casual_Pants",
+    "files": [
+      "Mens_Black_Casual_Pants_casual_lifestyle.png",
+      "Mens_Black_Casual_Pants_front_standing.png",
+      "Mens_Black_Casual_Pants_three_quarter.png"
+    ]
+  },
+  {
+    "productId": 82,
+    "productName": "Men's Black Casual Pants",
+    "fileKey": "Mens_Black_Casual_Pants",
+    "files": [
+      "Mens_Black_Casual_Pants_casual_lifestyle.png",
+      "Mens_Black_Casual_Pants_front_standing.png",
+      "Mens_Black_Casual_Pants_three_quarter.png"
+    ]
+  },
+  {
+    "productId": 83,
+    "productName": "Men's Black Casual Pants",
+    "fileKey": "Mens_Black_Casual_Pants",
+    "files": [
+      "Mens_Black_Casual_Pants_casual_lifestyle.png",
+      "Mens_Black_Casual_Pants_front_standing.png",
+      "Mens_Black_Casual_Pants_three_quarter.png"
+    ]
+  },
+  {
+    "productId": 93,
+    "productName": "Men's Dark Casual Jacket",
+    "fileKey": "Mens_Dark_Casual_Jacket",
+    "files": [
+      "Mens_Dark_Casual_Jacket_casual_lifestyle.png",
+      "Mens_Dark_Casual_Jacket_front_standing.png",
+      "Mens_Dark_Casual_Jacket_three_quarter.png"
+    ]
+  },
+  {
+    "productId": 100,
+    "productName": "Men's Dark Casual Jeans",
+    "fileKey": "Mens_Dark_Casual_Jeans",
+    "files": [
+      "Mens_Dark_Casual_Jeans_casual_lifestyle.png",
+      "Mens_Dark_Casual_Jeans_front_standing.png",
+      "Mens_Dark_Casual_Jeans_three_quarter.png"
+    ]
+  },
+  {
+    "productId": 101,
+    "productName": "Men's Dark Casual Jeans",
+    "fileKey": "Mens_Dark_Casual_Jeans",
+    "files": [
+      "Mens_Dark_Casual_Jeans_casual_lifestyle.png",
+      "Mens_Dark_Casual_Jeans_front_standing.png",
+      "Mens_Dark_Casual_Jeans_three_quarter.png"
+    ]
+  },
+  {
+    "productId": 102,
+    "productName": "Men's Dark Casual Jeans",
+    "fileKey": "Mens_Dark_Casual_Jeans",
+    "files": [
+      "Mens_Dark_Casual_Jeans_casual_lifestyle.png",
+      "Mens_Dark_Casual_Jeans_front_standing.png",
+      "Mens_Dark_Casual_Jeans_three_quarter.png"
+    ]
+  },
+  {
+    "productId": 103,
+    "productName": "Men's Dark Casual Jeans",
+    "fileKey": "Mens_Dark_Casual_Jeans",
+    "files": [
+      "Mens_Dark_Casual_Jeans_casual_lifestyle.png",
+      "Mens_Dark_Casual_Jeans_front_standing.png",
+      "Mens_Dark_Casual_Jeans_three_quarter.png"
+    ]
+  },
+  {
+    "productId": 105,
+    "productName": "Men's Blue Casual Jeans",
+    "fileKey": "Mens_Blue_Casual_Jeans",
+    "files": [
+      "Mens_Blue_Casual_Jeans_casual_lifestyle.png",
+      "Mens_Blue_Casual_Jeans_front_standing.png",
+      "Mens_Blue_Casual_Jeans_three_quarter.png"
+    ]
+  },
+  {
+    "productId": 112,
+    "productName": "Men's Dark Casual Pants",
+    "fileKey": "Mens_Dark_Casual_Pants",
+    "files": [
+      "Mens_Dark_Casual_Pants_casual_lifestyle.png",
+      "Mens_Dark_Casual_Pants_front_standing.png",
+      "Mens_Dark_Casual_Pants_three_quarter.png"
+    ]
+  },
+  {
+    "productId": 114,
+    "productName": "Men's Light Casual Jeans",
+    "fileKey": "Mens_Light_Casual_Jeans",
+    "files": [
+      "Mens_Light_Casual_Jeans_casual_lifestyle.png",
+      "Mens_Light_Casual_Jeans_front_standing.png",
+      "Mens_Light_Casual_Jeans_three_quarter.png"
+    ]
+  },
+  {
+    "productId": 115,
+    "productName": "Men's Dark Casual Pants",
+    "fileKey": "Mens_Dark_Casual_Pants",
+    "files": [
+      "Mens_Dark_Casual_Pants_casual_lifestyle.png",
+      "Mens_Dark_Casual_Pants_front_standing.png",
+      "Mens_Dark_Casual_Pants_three_quarter.png"
+    ]
+  },
+  {
+    "productId": 119,
+    "productName": "Men's Light Casual Jeans",
+    "fileKey": "Mens_Light_Casual_Jeans",
+    "files": [
+      "Mens_Light_Casual_Jeans_casual_lifestyle.png",
+      "Mens_Light_Casual_Jeans_front_standing.png",
+      "Mens_Light_Casual_Jeans_three_quarter.png"
+    ]
+  },
+  {
+    "productId": 139,
+    "productName": "Men's Dark Casual Pants",
+    "fileKey": "Mens_Dark_Casual_Pants",
+    "files": [
+      "Mens_Dark_Casual_Pants_casual_lifestyle.png",
+      "Mens_Dark_Casual_Pants_front_standing.png",
+      "Mens_Dark_Casual_Pants_three_quarter.png"
+    ]
+  },
+  {
+    "productId": 140,
+    "productName": "Women's Black Casual Pants",
+    "fileKey": "Womens_Black_Casual_Pants",
+    "files": [
+      "Womens_Black_Casual_Pants_casual_lifestyle.png",
+      "Womens_Black_Casual_Pants_front_standing.png",
+      "Womens_Black_Casual_Pants_three_quarter.png"
+    ]
+  },
+  {
+    "productId": 141,
+    "productName": "Women's Blue Casual Jeans",
+    "fileKey": "Womens_Blue_Casual_Jeans",
+    "files": [
+      "Womens_Blue_Casual_Jeans_casual_lifestyle.png",
+      "Womens_Blue_Casual_Jeans_front_standing.png",
+      "Womens_Blue_Casual_Jeans_three_quarter.png"
+    ]
+  },
+  {
+    "productId": 150,
+    "productName": "Women's Black Casual Pants",
+    "fileKey": "Womens_Black_Casual_Pants",
+    "files": [
+      "Womens_Black_Casual_Pants_casual_lifestyle.png",
+      "Womens_Black_Casual_Pants_front_standing.png",
+      "Womens_Black_Casual_Pants_three_quarter.png"
+    ]
+  },
+  {
+    "productId": 153,
+    "productName": "Women's Blue Casual Jeans",
+    "fileKey": "Womens_Blue_Casual_Jeans",
+    "files": [
+      "Womens_Blue_Casual_Jeans_casual_lifestyle.png",
+      "Womens_Blue_Casual_Jeans_front_standing.png",
+      "Womens_Blue_Casual_Jeans_three_quarter.png"
+    ]
+  },
+  {
+    "productId": 161,
+    "productName": "Kids's Pink Casual Tops",
+    "fileKey": "Kidss_Pink_Casual_Tops",
+    "files": [
+      "Kidss_Pink_Casual_Tops_casual_lifestyle.png",
+      "Kidss_Pink_Casual_Tops_front_standing.png",
+      "Kidss_Pink_Casual_Tops_three_quarter.png"
+    ]
+  },
+  {
+    "productId": 163,
+    "productName": "Women's Light Casual Jeans",
+    "fileKey": "Womens_Light_Casual_Jeans",
+    "files": [
+      "Womens_Light_Casual_Jeans_casual_lifestyle.png",
+      "Womens_Light_Casual_Jeans_front_standing.png",
+      "Womens_Light_Casual_Jeans_three_quarter.png"
+    ]
+  },
+  {
+    "productId": 164,
+    "productName": "Women's Light Casual Jeans",
+    "fileKey": "Womens_Light_Casual_Jeans",
+    "files": [
+      "Womens_Light_Casual_Jeans_casual_lifestyle.png",
+      "Womens_Light_Casual_Jeans_front_standing.png",
+      "Womens_Light_Casual_Jeans_three_quarter.png"
+    ]
+  },
+  {
+    "productId": 165,
+    "productName": "Women's Light Casual Jeans",
+    "fileKey": "Womens_Light_Casual_Jeans",
+    "files": [
+      "Womens_Light_Casual_Jeans_casual_lifestyle.png",
+      "Womens_Light_Casual_Jeans_front_standing.png",
+      "Womens_Light_Casual_Jeans_three_quarter.png"
+    ]
+  },
+  {
+    "productId": 170,
+    "productName": "Women's Pink Casual T-Shirt",
+    "fileKey": "Womens_Pink_Casual_T-Shirt",
+    "files": [
+      "Womens_Pink_Casual_T-Shirt_casual_lifestyle.png",
+      "Womens_Pink_Casual_T-Shirt_front_standing.png",
+      "Womens_Pink_Casual_T-Shirt_three_quarter.png"
+    ]
+  },
+  {
+    "productId": 175,
+    "productName": "Men's Black Casual Pants",
+    "fileKey": "Mens_Black_Casual_Pants",
+    "files": [
+      "Mens_Black_Casual_Pants_casual_lifestyle.png",
+      "Mens_Black_Casual_Pants_front_standing.png",
+      "Mens_Black_Casual_Pants_three_quarter.png"
+    ]
+  },
+  {
+    "productId": 176,
+    "productName": "Men's Black Casual Pants",
+    "fileKey": "Mens_Black_Casual_Pants",
+    "files": [
+      "Mens_Black_Casual_Pants_casual_lifestyle.png",
+      "Mens_Black_Casual_Pants_front_standing.png",
+      "Mens_Black_Casual_Pants_three_quarter.png"
+    ]
+  },
+  {
+    "productId": 177,
+    "productName": "Men's Blue Casual Jeans",
+    "fileKey": "Mens_Blue_Casual_Jeans",
+    "files": [
+      "Mens_Blue_Casual_Jeans_casual_lifestyle.png",
+      "Mens_Blue_Casual_Jeans_front_standing.png",
+      "Mens_Blue_Casual_Jeans_three_quarter.png"
+    ]
+  },
+  {
+    "productId": 179,
+    "productName": "Men's Light Casual Jeans",
+    "fileKey": "Mens_Light_Casual_Jeans",
+    "files": [
+      "Mens_Light_Casual_Jeans_casual_lifestyle.png",
+      "Mens_Light_Casual_Jeans_front_standing.png",
+      "Mens_Light_Casual_Jeans_three_quarter.png"
+    ]
+  },
+  {
+    "productId": 180,
+    "productName": "Men's Light Casual Shirt",
+    "fileKey": "Mens_Light_Casual_Shirt",
+    "files": [
+      "Mens_Light_Casual_Shirt_casual_lifestyle.png",
+      "Mens_Light_Casual_Shirt_front_standing.png",
+      "Mens_Light_Casual_Shirt_three_quarter.png"
+    ]
+  },
+  {
+    "productId": 183,
+    "productName": "Men's Black Casual Pants",
+    "fileKey": "Mens_Black_Casual_Pants",
+    "files": [
+      "Mens_Black_Casual_Pants_casual_lifestyle.png",
+      "Mens_Black_Casual_Pants_front_standing.png",
+      "Mens_Black_Casual_Pants_three_quarter.png"
+    ]
+  },
+  {
+    "productId": 186,
+    "productName": "Men's Dark Casual Jeans",
+    "fileKey": "Mens_Dark_Casual_Jeans",
+    "files": [
+      "Mens_Dark_Casual_Jeans_casual_lifestyle.png",
+      "Mens_Dark_Casual_Jeans_front_standing.png",
+      "Mens_Dark_Casual_Jeans_three_quarter.png"
+    ]
+  },
+  {
+    "productId": 190,
+    "productName": "Men's White Casual Graphic Print T-Shirt",
+    "fileKey": "Mens_Off_white_Casual_Graphic_Print_T-Shirt",
+    "files": [
+      "Mens_Off_white_Casual_Graphic_Print_T-Shirt_casual_lifestyle.png",
+      "Mens_Off_white_Casual_Graphic_Print_T-Shirt_front_standing.png",
+      "Mens_Off_white_Casual_Graphic_Print_T-Shirt_three_quarter.png"
+    ]
+  },
+  {
+    "productId": 195,
+    "productName": "Men's Dark Casual Pants",
+    "fileKey": "Mens_Dark_Casual_Pants",
+    "files": [
+      "Mens_Dark_Casual_Pants_casual_lifestyle.png",
+      "Mens_Dark_Casual_Pants_front_standing.png",
+      "Mens_Dark_Casual_Pants_three_quarter.png"
+    ]
+  },
+  {
+    "productId": 198,
+    "productName": "Women's Blue Casual Jeans",
+    "fileKey": "Womens_Blue_Casual_Jeans",
+    "files": [
+      "Womens_Blue_Casual_Jeans_casual_lifestyle.png",
+      "Womens_Blue_Casual_Jeans_front_standing.png",
+      "Womens_Blue_Casual_Jeans_three_quarter.png"
+    ]
+  },
+  {
+    "productId": 201,
+    "productName": "Men's Black Casual Pants",
+    "fileKey": "Mens_Black_Casual_Pants",
+    "files": [
+      "Mens_Black_Casual_Pants_casual_lifestyle.png",
+      "Mens_Black_Casual_Pants_front_standing.png",
+      "Mens_Black_Casual_Pants_three_quarter.png"
+    ]
+  },
+  {
+    "productId": 203,
+    "productName": "Men's Dark Casual Jeans",
+    "fileKey": "Mens_Dark_Casual_Jeans",
+    "files": [
+      "Mens_Dark_Casual_Jeans_casual_lifestyle.png",
+      "Mens_Dark_Casual_Jeans_front_standing.png",
+      "Mens_Dark_Casual_Jeans_three_quarter.png"
+    ]
+  },
+  {
+    "productId": 209,
+    "productName": "Women's Black Casual Pants",
+    "fileKey": "Womens_Black_Casual_Pants",
+    "files": [
+      "Womens_Black_Casual_Pants_casual_lifestyle.png",
+      "Womens_Black_Casual_Pants_front_standing.png",
+      "Womens_Black_Casual_Pants_three_quarter.png"
+    ]
+  },
+  {
+    "productId": 210,
+    "productName": "Men's Black Casual Graphic Print Short",
+    "fileKey": "Mens_Black_Casual_Graphic_Print_Short",
+    "files": [
+      "Mens_Black_Casual_Graphic_Print_Short_casual_lifestyle.png",
+      "Mens_Black_Casual_Graphic_Print_Short_front_standing.png",
+      "Mens_Black_Casual_Graphic_Print_Short_three_quarter.png"
+    ]
+  },
+  {
+    "productId": 211,
+    "productName": "Men's Black Casual Pants",
+    "fileKey": "Mens_Black_Casual_Pants",
+    "files": [
+      "Mens_Black_Casual_Pants_casual_lifestyle.png",
+      "Mens_Black_Casual_Pants_front_standing.png",
+      "Mens_Black_Casual_Pants_three_quarter.png"
+    ]
+  },
+  {
+    "productId": 213,
+    "productName": "Women's Black Casual Pants",
+    "fileKey": "Womens_Black_Casual_Pants",
+    "files": [
+      "Womens_Black_Casual_Pants_casual_lifestyle.png",
+      "Womens_Black_Casual_Pants_front_standing.png",
+      "Womens_Black_Casual_Pants_three_quarter.png"
+    ]
+  },
+  {
+    "productId": 214,
+    "productName": "Women's Light Casual Jeans",
+    "fileKey": "Womens_Light_Casual_Jeans",
+    "files": [
+      "Womens_Light_Casual_Jeans_casual_lifestyle.png",
+      "Womens_Light_Casual_Jeans_front_standing.png",
+      "Womens_Light_Casual_Jeans_three_quarter.png"
+    ]
+  },
+  {
+    "productId": 215,
+    "productName": "Women's White Casual T-Shirt",
+    "fileKey": "Womens_White_Casual_Shirt",
+    "files": [
+      "Womens_White_Casual_Shirt_casual_lifestyle.png",
+      "Womens_White_Casual_Shirt_front_standing.png",
+      "Womens_White_Casual_Shirt_three_quarter.png"
+    ]
+  },
+  {
+    "productId": 217,
+    "productName": "Men's Dark Casual Jeans",
+    "fileKey": "Mens_Dark_Casual_Jeans",
+    "files": [
+      "Mens_Dark_Casual_Jeans_casual_lifestyle.png",
+      "Mens_Dark_Casual_Jeans_front_standing.png",
+      "Mens_Dark_Casual_Jeans_three_quarter.png"
+    ]
+  },
+  {
+    "productId": 219,
+    "productName": "Women's Black Casual Pants",
+    "fileKey": "Womens_Black_Casual_Pants",
+    "files": [
+      "Womens_Black_Casual_Pants_casual_lifestyle.png",
+      "Womens_Black_Casual_Pants_front_standing.png",
+      "Womens_Black_Casual_Pants_three_quarter.png"
+    ]
+  },
+  {
+    "productId": 224,
+    "productName": "Kids's Light Casual Bottoms",
+    "fileKey": "Kidss_Light_Casual_Bottoms",
+    "files": [
+      "Kidss_Light_Casual_Bottoms_casual_lifestyle.png",
+      "Kidss_Light_Casual_Bottoms_front_standing.png",
+      "Kidss_Light_Casual_Bottoms_three_quarter.png"
+    ]
+  },
+  {
+    "productId": 225,
+    "productName": "Men's White Casual Graphic Print T-Shirt",
+    "fileKey": "Mens_Off_white_Casual_Graphic_Print_T-Shirt",
+    "files": [
+      "Mens_Off_white_Casual_Graphic_Print_T-Shirt_casual_lifestyle.png",
+      "Mens_Off_white_Casual_Graphic_Print_T-Shirt_front_standing.png",
+      "Mens_Off_white_Casual_Graphic_Print_T-Shirt_three_quarter.png"
+    ]
+  },
+  {
+    "productId": 227,
+    "productName": "Women's Black Casual Graphic Print Dress",
+    "fileKey": "Womens_Black_Casual_Graphic_Print_Dress",
+    "files": [
+      "Womens_Black_Casual_Graphic_Print_Dress_casual_lifestyle.png",
+      "Womens_Black_Casual_Graphic_Print_Dress_front_standing.png",
+      "Womens_Black_Casual_Graphic_Print_Dress_three_quarter.png"
+    ]
+  },
+  {
+    "productId": 228,
+    "productName": "Women's Black Casual Pants",
+    "fileKey": "Womens_Black_Casual_Pants",
+    "files": [
+      "Womens_Black_Casual_Pants_casual_lifestyle.png",
+      "Womens_Black_Casual_Pants_front_standing.png",
+      "Womens_Black_Casual_Pants_three_quarter.png"
+    ]
+  },
+  {
+    "productId": 229,
+    "productName": "Women's Blue Casual Jeans",
+    "fileKey": "Womens_Blue_Casual_Jeans",
+    "files": [
+      "Womens_Blue_Casual_Jeans_casual_lifestyle.png",
+      "Womens_Blue_Casual_Jeans_front_standing.png",
+      "Womens_Blue_Casual_Jeans_three_quarter.png"
+    ]
+  },
+  {
+    "productId": 230,
+    "productName": "Women's White Casual Pants",
+    "fileKey": "Womens_White_Casual_Pants",
+    "files": [
+      "Womens_White_Casual_Pants_casual_lifestyle.png",
+      "Womens_White_Casual_Pants_front_standing.png",
+      "Womens_White_Casual_Pants_three_quarter.png"
+    ]
+  },
+  {
+    "productId": 231,
+    "productName": "Men's Orange Casual Graphic Print T-Shirt",
+    "fileKey": "Mens_Orange_Casual_Graphic_Print_T-Shirt",
+    "files": [
+      "Mens_Orange_Casual_Graphic_Print_T-Shirt_casual_lifestyle.png",
+      "Mens_Orange_Casual_Graphic_Print_T-Shirt_front_standing.png",
+      "Mens_Orange_Casual_Graphic_Print_T-Shirt_three_quarter.png"
+    ]
+  },
+  {
+    "productId": 232,
+    "productName": "Men's Khaki Casual Pants",
+    "fileKey": "Mens_Khaki_Casual_Pants",
+    "files": [
+      "Mens_Khaki_Casual_Pants_casual_lifestyle.png",
+      "Mens_Khaki_Casual_Pants_front_standing.png",
+      "Mens_Khaki_Casual_Pants_three_quarter.png"
+    ]
+  },
+  {
+    "productId": 235,
+    "productName": "Men's Dark Casual Graphic Print T-Shirt",
+    "fileKey": "Mens_Dark_Casual_Graphic_Print_Shirt",
+    "files": [
+      "Mens_Dark_Casual_Graphic_Print_Shirt_casual_lifestyle.png",
+      "Mens_Dark_Casual_Graphic_Print_Shirt_front_standing.png",
+      "Mens_Dark_Casual_Graphic_Print_Shirt_three_quarter.png"
+    ]
+  },
+  {
+    "productId": 237,
+    "productName": "Men's Blue Casual Jeans",
+    "fileKey": "Mens_Blue_Casual_Jeans",
+    "files": [
+      "Mens_Blue_Casual_Jeans_casual_lifestyle.png",
+      "Mens_Blue_Casual_Jeans_front_standing.png",
+      "Mens_Blue_Casual_Jeans_three_quarter.png"
+    ]
+  },
+  {
+    "productId": 241,
+    "productName": "Women's Black Casual Apparel",
+    "fileKey": "Womens_Black_Casual_Apparel",
+    "files": [
+      "Womens_Black_Casual_Apparel_casual_lifestyle.png",
+      "Womens_Black_Casual_Apparel_front_standing.png",
+      "Womens_Black_Casual_Apparel_three_quarter.png"
+    ]
+  },
+  {
+    "productId": 244,
+    "productName": "Women's Light Casual Jacket",
+    "fileKey": "Womens_Light_Casual_Jacket",
+    "files": [
+      "Womens_Light_Casual_Jacket_casual_lifestyle.png",
+      "Womens_Light_Casual_Jacket_front_standing.png",
+      "Womens_Light_Casual_Jacket_three_quarter.png"
+    ]
+  },
+  {
+    "productId": 248,
+    "productName": "Men's Orange Casual Graphic Print T-Shirt",
+    "fileKey": "Mens_Orange_Casual_Graphic_Print_T-Shirt",
+    "files": [
+      "Mens_Orange_Casual_Graphic_Print_T-Shirt_casual_lifestyle.png",
+      "Mens_Orange_Casual_Graphic_Print_T-Shirt_front_standing.png",
+      "Mens_Orange_Casual_Graphic_Print_T-Shirt_three_quarter.png"
+    ]
+  },
+  {
+    "productId": 249,
+    "productName": "Women's White Casual Graphic Print Sweatshirt",
+    "fileKey": "Womens_White_Casual_Graphic_Print_Sweatshirt",
+    "files": [
+      "Womens_White_Casual_Graphic_Print_Sweatshirt_casual_lifestyle.png",
+      "Womens_White_Casual_Graphic_Print_Sweatshirt_front_standing.png",
+      "Womens_White_Casual_Graphic_Print_Sweatshirt_three_quarter.png"
+    ]
+  },
+  {
+    "productId": 250,
+    "productName": "Women's White Casual Graphic Print Sweatshirt",
+    "fileKey": "Womens_White_Casual_Graphic_Print_Sweatshirt",
+    "files": [
+      "Womens_White_Casual_Graphic_Print_Sweatshirt_casual_lifestyle.png",
+      "Womens_White_Casual_Graphic_Print_Sweatshirt_front_standing.png",
+      "Womens_White_Casual_Graphic_Print_Sweatshirt_three_quarter.png"
+    ]
+  },
+  {
+    "productId": 251,
+    "productName": "Women's Beige Casual Graphic Print Hoodie",
+    "fileKey": "Womens_Beige_Casual_Graphic_Print_Hoodie",
+    "files": [
+      "Womens_Beige_Casual_Graphic_Print_Hoodie_front_standing.png"
+    ]
+  },
+  {
+    "productId": 253,
+    "productName": "Men's White Casual Pants",
+    "fileKey": "Mens_White_Casual_Pants",
+    "files": [
+      "Mens_White_Casual_Pants_casual_lifestyle.png",
+      "Mens_White_Casual_Pants_front_standing.png",
+      "Mens_White_Casual_Pants_three_quarter.png"
+    ]
+  }
+]
